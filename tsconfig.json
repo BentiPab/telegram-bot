@@ -1,0 +1,15 @@
+{
+	"compilerOptions": {
+		"module": "commonjs",
+		"esModuleInterop": true,
+		"target": "es6",
+		"lib": ["esnext", "dom"],
+		"noImplicitAny": true,
+		"strict": true,
+		"moduleResolution": "node",
+		"sourceMap": true,
+		"resolveJsonModule": true,
+		"noErrorTruncation": true
+	},
+	"exclude": ["node_modules", ".vscode"]
+  }
