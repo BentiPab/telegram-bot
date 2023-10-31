@@ -1,22 +1,20 @@
+import { Context } from "telegraf";
+import { ResTypeWithAvg } from "../model";
 import { getDollarRate } from "../services/dolar";
-import server from "../app";
+import { formatData } from "../utils/formater";
 
 const { Telegraf } = require("telegraf");
 
 const bot = new Telegraf(process.env.BOT_TOKEN);
-const port = parseInt(process.env.PORT || "3000");
-const domain = process.env.DEPLOY_URL;
-const path = process.env.DEPLOY_PATH;
 
-const webhook = async () => await bot.createWebhook({ domain });
-
-server.post(`/telegraf/${bot.secretPathComponent()}`, async () => webhook());
-
-bot.command("dolar", async () => {
+bot.command("dolar", async (ctx: Context) => {
   const rate = await getDollarRate();
-  Telegraf.reply(rate);
+  const rateFormatted = formatData(rate);
+  ctx.telegram.sendMessage(ctx.chat?.id!, rateFormatted);
 });
 
-server
-  .listen({ port: port })
-  .then(() => console.log("Listening on port", port));
+export const sendDollarUpdated = (message: string) => {
+  bot.sendMessage(6549316187, message);
+};
+
+bot.launch();
