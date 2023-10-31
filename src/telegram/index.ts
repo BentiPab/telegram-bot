@@ -1,5 +1,6 @@
 import { getDollarRate } from "../services/dolar";
 import server from "../app";
+import { Context } from "telegraf";
 
 const { Telegraf } = require("telegraf");
 
@@ -12,9 +13,9 @@ const webhook = async () => await bot.createWebhook({ domain });
 
 server.post(`/telegraf/${bot.secretPathComponent()}`, async () => webhook());
 
-bot.command("dolar", async () => {
+bot.command("dolar", async (ctx: Context) => {
   const rate = await getDollarRate();
-  Telegraf.reply(rate);
+  ctx.telegram.sendMessage(ctx.chat?.id!, rate);
 });
 
 server
