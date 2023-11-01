@@ -10,7 +10,7 @@ server.get("/test", async (req, res) => {
 });
 
 try {
-  server.listen({ port });
+  server.listen({ port, host: "0.0.0.0" });
 } catch (err) {
   server.log.error(err);
   process.exit(1);
