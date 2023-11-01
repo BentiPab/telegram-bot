@@ -38,7 +38,7 @@ const getPollingDollarRates = async () => {
   await shouldSendRates();
   setInterval(async () => {
     await shouldSendRates();
-  }, ONE_MINUTE_MS / 2);
+  }, TEN_MINUTES_MS);
 };
 
 const messageMovementFormatter = (newAvg: number) => {
