@@ -1,7 +1,10 @@
 import dolar from "../class/dolar";
+import { RateController } from "../controller/rateContoller";
+import { SubscriberController } from "../controller/subscriberController";
+import { IRate } from "../mongo/models/rate";
 import { sendDollarUpdated } from "../telegram";
 import { formatData } from "../utils/formater";
-import { getDollarRate } from "./dolar";
+import { fetchDollarRate } from "./dolar";
 
 const ONE_MINUTE_MS = 1000 * 60;
 const TEN_MINUTES_MS = ONE_MINUTE_MS * 10;
@@ -22,23 +25,48 @@ const isMarketTime = () => {
   return now > 11 && now < 17;
 };
 
-const shouldSendRates = async () => {
-  const rate = await getDollarRate();
-  if (rate.avg !== dolar.getLastAvg() && isMarketTime()) {
-    dolar.setLastAvg(rate.avg);
-    const messageMovement = messageMovementFormatter(rate.avg);
-    const dataFormated = formatData(rate);
-    const textToSend = `${messageMovement}\n${dataFormated}`;
-
-    sendDollarUpdated(textToSend);
+const shouldSendRates = async (newAvg: number) => {
+  const oldRate = await RateController.getRate("dolar");
+  if (!oldRate) {
+    return false;
   }
+  return newAvg !== (oldRate as IRate).avg && isMarketTime();
+};
+
+const getTextToSend = (rate: IRate) => {
+  dolar.setLastAvg(rate.avg);
+  const messageMovement = messageMovementFormatter(rate.avg);
+  const dataFormated = formatData(rate);
+  return `${messageMovement}\n${dataFormated}`;
+};
+
+const sendAllMessages = async (rate: IRate) => {
+  const subs = await SubscriberController.findAll();
+  const subsIds = subs.map((s) => s.id);
+  const messageToSend = getTextToSend(rate);
+  const promises = subsIds.map(async (sid) =>
+    sendDollarUpdated(sid, messageToSend)
+  );
+
+  await Promise.allSettled(promises);
+};
+
+const getDollarRates = async () => {
+  const rate = await fetchDollarRate();
+  const shouldSendMessages = await shouldSendRates(rate.avg);
+
+  if (shouldSendMessages) {
+    await sendAllMessages(rate);
+  }
+
+  await RateController.updateRate("dolar", rate);
 };
 
 const getPollingDollarRates = async () => {
-  await shouldSendRates();
+  await getDollarRates();
   setInterval(async () => {
-    await shouldSendRates();
-  }, TEN_MINUTES_MS);
+    await getDollarRates();
+  }, ONE_MINUTE_MS);
 };
 
 const messageMovementFormatter = (newAvg: number) => {

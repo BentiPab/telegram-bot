@@ -3,12 +3,13 @@ import { parseData } from "../utils/formater";
 import { ResType } from "../model";
 const url = process.env.AMBITO_URL;
 
-export const getDollarRate = async () => {
-  const dolarData = await fetchRateData();
-  return parseData(dolarData);
-};
-
-const fetchRateData = async () => {
+export const fetchDollarRate = async () => {
   const res = await axios.get<ResType>(url!);
-  return res.data;
+  const {
+    valor_cierre_ant,
+    variacion,
+    "class-variacion": classVariacion,
+    ...dolarData
+  } = res.data;
+  return parseData({ ...dolarData, name: "dolar" });
 };
