@@ -6,7 +6,6 @@ class Dolar {
   }
 
   public setLastAvg = (lastAvg: number) => {
-    console.log(lastAvg);
     this.lastAvg = lastAvg;
   };
 

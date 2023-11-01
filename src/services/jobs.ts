@@ -16,10 +16,15 @@ const movementMessage: Movement = {
   decreased: "El dolar bajo:",
 };
 
+const isMarketTime = () => {
+  const now = new Date().getHours();
+
+  return now > 11 && now < 17;
+};
+
 const shouldSendRates = async () => {
   const rate = await getDollarRate();
-  console.log(dolar);
-  if (rate.avg !== dolar.getLastAvg()) {
+  if (rate.avg !== dolar.getLastAvg() && isMarketTime()) {
     dolar.setLastAvg(rate.avg);
     const messageMovement = messageMovementFormatter(rate.avg);
     const dataFormated = formatData(rate);

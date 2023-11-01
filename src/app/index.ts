@@ -1,5 +1,5 @@
 import Fastify from "fastify";
-const port = process.env.PORT || 3000;
+const port = parseInt(process.env.PORT || "3000");
 
 const server = Fastify({
   logger: true,
@@ -10,7 +10,7 @@ server.get("/test", async (req, res) => {
 });
 
 try {
-  server.listen({ port: 3000 });
+  server.listen({ port });
 } catch (err) {
   server.log.error(err);
   process.exit(1);
