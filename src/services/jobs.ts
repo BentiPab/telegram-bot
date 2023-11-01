@@ -64,7 +64,7 @@ const getPollingDollarRates = async () => {
   await getDollarRates();
   setInterval(async () => {
     await getDollarRates();
-  }, ONE_MINUTE_MS);
+  }, TEN_MINUTES_MS);
 };
 
 const messageMovementFormatter = async (newAvg: number) => {
