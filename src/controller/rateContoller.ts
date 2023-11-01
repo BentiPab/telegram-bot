@@ -16,7 +16,7 @@ const updateRate = async (name: string, updatedRate: IRate) => {
   return rate;
 };
 
-const getRate = async (name: string) => await Rate.findOne({ name });
+const getRate = async (name: string) => await Rate.findOne({ name }).lean();
 
 const createRate = async (newRate: Omit<IRate, "avg">) => {
   const rate = await Rate.findOne({ name: newRate.name });

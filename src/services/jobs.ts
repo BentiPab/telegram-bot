@@ -1,4 +1,3 @@
-import dolar from "../class/dolar";
 import { RateController } from "../controller/rateContoller";
 import { SubscriberController } from "../controller/subscriberController";
 import { IRate } from "../mongo/models/rate";
@@ -34,7 +33,6 @@ const shouldSendRates = async (newAvg: number) => {
 };
 
 const getTextToSend = (rate: IRate) => {
-  dolar.setLastAvg(rate.avg);
   const messageMovement = messageMovementFormatter(rate.avg);
   const dataFormated = formatData(rate);
   return `${messageMovement}\n${dataFormated}`;
@@ -69,12 +67,13 @@ const getPollingDollarRates = async () => {
   }, ONE_MINUTE_MS);
 };
 
-const messageMovementFormatter = (newAvg: number) => {
-  const lastAvg = dolar.getLastAvg();
-  const movement: keyof Movement = newAvg > lastAvg ? "increased" : "decreased";
+const messageMovementFormatter = async (newAvg: number) => {
+  const oldRate = await RateController.getRate("dolar");
+  const oldAvg = oldRate?.avg ?? 0;
+  const movement: keyof Movement = newAvg > oldAvg ? "increased" : "decreased";
   const message = movementMessage[movement];
 
-  const mvmtPercentage = (newAvg * 100) / lastAvg - 100;
+  const mvmtPercentage = (newAvg * 100) / oldAvg - 100;
 
   return `${message} ${mvmtPercentage}`;
 };

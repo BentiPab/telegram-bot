@@ -1,7 +1,5 @@
 import { Context } from "telegraf";
-import { fetchDollarRate } from "../services/dolar";
 import { GREETING_MESSAGE, formatData } from "../utils/formater";
-import dolar from "../class/dolar";
 import { message } from "telegraf/filters";
 import { SubscriberController } from "../controller/subscriberController";
 import { ISubscriber } from "../mongo/models/subscriber";
@@ -22,7 +20,6 @@ bot.command("dolar", async (ctx: Context) => {
     return;
   }
   const rateFormatted = formatData(rate);
-  dolar.setLastAvg(rate.avg);
   ctx.telegram.sendMessage(ctx.chat?.id!, rateFormatted);
 });
 
