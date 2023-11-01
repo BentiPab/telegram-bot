@@ -3,7 +3,7 @@ import { ResType, ResTypeWithAvg } from "../model";
 export const formatData = (data: ResType) => {
   const { compra, venta, fecha } = parseData(data);
   const avg = getAvg(data);
-  return `Compra: ${compra} | Venta: ${venta} | Promedio: ${avg} | Fecha: ${fecha}`;
+  return `Compra: ${compra}\nVenta: ${venta}\nPromedio: ${avg}\nFecha: ${fecha}`;
 };
 
 export const parseData = (data: ResType): ResTypeWithAvg => {

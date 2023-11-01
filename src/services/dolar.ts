@@ -1,5 +1,5 @@
 import axios from "axios";
-import { formatData, getAvg, parseData } from "../utils/formater";
+import { parseData } from "../utils/formater";
 import { ResType } from "../model";
 const url = process.env.AMBITO_URL;
 
