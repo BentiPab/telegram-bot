@@ -4,6 +4,7 @@ import { IRate } from "../mongo/models/rate";
 import { sendDollarUpdated } from "../telegram";
 import { formatData } from "../utils/formater";
 import { fetchDollarRate } from "./dolar";
+import cron from "node-cron";
 
 const ONE_MINUTE_MS = 1000 * 60;
 const TEN_MINUTES_MS = ONE_MINUTE_MS * 10;
@@ -29,7 +30,7 @@ const shouldSendRates = async (newAvg: number) => {
   if (!oldRate) {
     return false;
   }
-  return newAvg !== (oldRate as IRate).avg && isMarketTime();
+  return newAvg !== (oldRate as IRate).avg;
 };
 
 const getTextToSend = async (rate: IRate) => {
@@ -78,4 +79,6 @@ const messageMovementFormatter = async (newAvg: number) => {
   return `${message} ${mvmtPercentage}`;
 };
 
-getPollingDollarRates();
+cron.schedule("1/10 11-17 * * 1-5", async () => await getDollarRates(), {
+  timezone: "America/Buenos_Aires",
+});

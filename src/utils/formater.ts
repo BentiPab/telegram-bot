@@ -25,6 +25,6 @@ export const GREETING_MESSAGE = `Hola! Los comandos disponibles son los siguient
 export const getGreetingMessage = (userName: string) => {
   return `Hola ${userName}! Los comandos disponibles son los siguientes:
   /dolar para recibir el valor del dolar
-  /subscribe para recibir una actualizacion cada 10min durante horario de mercado
+  /subscribe para recibir actualizacion cuando la moneda fluctua
   /unsubscribe para dejar de recibir actualizaciones`;
 };

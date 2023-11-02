@@ -11,9 +11,17 @@ import { RateController } from "../controller/rateContoller";
 
 const { Telegraf } = require("telegraf");
 
+type Command = {
+  [k: string]: (ctx: Context) => Promise<void> | void;
+};
+
 const bot: typeof Telegraf = new Telegraf(process.env.BOT_TOKEN);
 
-bot.command("dolar", async (ctx: Context) => {
+const sendMessage = (ctx: Context, message: string) => {
+  ctx.telegram.sendMessage(ctx.chat?.id!, message);
+};
+
+const dollarCallback = async (ctx: Context) => {
   const rate = await RateController.getRate("dolar");
 
   if (!rate) {
@@ -24,38 +32,51 @@ bot.command("dolar", async (ctx: Context) => {
     return;
   }
   const rateFormatted = formatData(rate);
-  ctx.telegram.sendMessage(ctx.chat?.id!, rateFormatted);
-});
+  sendMessage(ctx, rateFormatted);
+};
 
-bot.command("start", async (ctx: Context) => {
-  sendGreetMessage(ctx);
-});
-
-bot.command("subscribe", async (ctx: Context) => {
+const subscribeCallback = async (ctx: Context) => {
   const sub = ctx.chat as unknown as ISubscriber;
 
   const res = await SubscriberController.createSubscriber(sub);
+  sendMessage(ctx, res);
+};
 
-  ctx.telegram.sendMessage(ctx.chat?.id!, res);
-});
-bot.command("unsubscribe", async (ctx: Context) => {
+const greetCallback = (ctx: Context) => {
+  const chat = ctx.chat as ISubscriber;
+  sendMessage(ctx, getGreetingMessage(chat.first_name));
+};
+
+const unsubscribeCallback = async (ctx: Context) => {
   const sub = ctx.chat as unknown as ISubscriber;
 
   const res = await SubscriberController.deleteSubscriber(sub.id);
+  sendMessage(ctx, res);
+};
 
-  ctx.telegram.sendMessage(ctx.chat?.id!, res);
-});
-bot.on(message("text"), async (ctx: Context) => {
-  sendGreetMessage(ctx);
-});
+const commands: Command = {
+  dolar: dollarCallback,
+  start: greetCallback,
+  subscribe: subscribeCallback,
+  unsubscribeCallback: unsubscribeCallback,
+};
+
+const initializeCommands = () => {
+  Object.keys(commands).forEach((k) => bot.command(k, commands[k]));
+};
+
+const initializeTexts = () => {
+  bot.on(message("text"), greetCallback);
+};
 
 export const sendDollarUpdated = (chatId: number, message: string) => {
   bot.telegram.sendMessage(chatId, message);
 };
 
-const sendGreetMessage = (ctx: Context) => {
-  const chat = ctx.chat as ISubscriber;
-  ctx.telegram.sendMessage(chat.id, getGreetingMessage(chat.first_name));
+const initBot = () => {
+  initializeCommands();
+  initializeTexts();
+  bot.launch();
 };
 
-bot.launch();
+initBot();
