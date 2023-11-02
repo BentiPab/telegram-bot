@@ -21,7 +21,7 @@ const rateSchema = new Schema<IRate>(
     variacion: { type: String, required: true },
     valorCierreAnt: { type: String, required: false },
   },
-  { id: false, timestamps: false, versionKey: false }
+  { id: false, versionKey: false }
 );
 
 rateSchema.pre("save", async function (this: IRate, next) {

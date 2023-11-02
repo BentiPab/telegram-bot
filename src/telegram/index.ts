@@ -1,14 +1,10 @@
 import { Context } from "telegraf";
-import {
-  GREETING_MESSAGE,
-  formatData,
-  getGreetingMessage,
-} from "../utils/formater";
+import { formatData, getGreetingMessage } from "../utils/formater";
 import { message } from "telegraf/filters";
 import { SubscriberController } from "../controller/subscriberController";
 import { ISubscriber } from "../mongo/models/subscriber";
 import { getRate } from "../services/rate";
-import { RatesNameKey, RatesNamesMap } from "../model";
+import { RatesNamesMap } from "../model";
 
 const { Telegraf } = require("telegraf");
 
