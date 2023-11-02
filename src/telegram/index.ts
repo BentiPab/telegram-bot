@@ -35,7 +35,7 @@ const subscribeCallback = async (ctx: Context) => {
 const greetCallback = (ctx: Context) => {
   const chat = ctx.chat as ISubscriber;
 
-  if (chat.username === "iWaldo") {
+  if (chat.username === "iWallas") {
     sendMessage(ctx, "Waldo come verga");
     return;
   }
