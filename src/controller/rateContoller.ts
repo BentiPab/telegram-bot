@@ -1,5 +1,5 @@
+import { MongoServerError } from "mongodb";
 import { IRate, Rate } from "../mongo/models/rate";
-import { getAvg } from "../utils/formater";
 
 const updateRate = async (name: string, updatedRate: IRate) => {
   const rate = await Rate.findOneAndUpdate(
@@ -19,15 +19,14 @@ const updateRate = async (name: string, updatedRate: IRate) => {
 const getRate = async (name: string) => await Rate.findOne({ name }).lean();
 
 const createRate = async (newRate: Omit<IRate, "avg">) => {
-  const rate = await Rate.findOne({ name: newRate.name });
-
-  if (rate) {
-    return "rate already exists";
+  try {
+    const rate = await Rate.create(newRate);
+    return rate;
+  } catch (e) {
+    if ((e as MongoServerError).code === 11000) {
+      return;
+    }
   }
-
-  const avg = getAvg(newRate);
-
-  return await Rate.create({ ...newRate, avg });
 };
 
 export const RateController = {

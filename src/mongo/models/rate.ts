@@ -1,11 +1,14 @@
 import { Schema, model } from "mongoose";
+import { fetchDollarRate } from "../../services/dolar";
 
 export interface IRate {
   name: string;
   compra: string;
   venta: string;
   fecha: string;
-  avg: number;
+  avg: string;
+  variacion: string;
+  valorCierreAnt: string;
 }
 
 const rateSchema = new Schema<IRate>(
@@ -14,27 +17,22 @@ const rateSchema = new Schema<IRate>(
     compra: { type: String, required: true },
     venta: { type: String, required: true },
     fecha: { type: String, required: true },
-    avg: { type: Number, required: true },
+    avg: { type: String, required: true },
+    variacion: { type: String, required: true },
+    valorCierreAnt: { type: String, required: false },
   },
   { id: false, timestamps: false, versionKey: false }
 );
 
-const createRate = async () => {
-  const rate = await Rate.findOne({ name: "dolar" });
+rateSchema.pre("save", async function (this: IRate, next) {
+  if (!this.avg) {
+    const compra = parseFloat(this.compra);
+    const venta = parseFloat(this.venta);
 
-  if (rate) {
-    return;
+    this.avg = ((compra + venta) / 2).toFixed(2).toString();
   }
 
-  await Rate.create({
-    name: "dolar",
-    venta: "0",
-    compra: "0",
-    fecha: "0",
-    avg: "0",
-  });
-};
+  next();
+});
 
 export const Rate = model<IRate>("Rate", rateSchema);
-
-createRate();

@@ -7,7 +7,8 @@ import {
 import { message } from "telegraf/filters";
 import { SubscriberController } from "../controller/subscriberController";
 import { ISubscriber } from "../mongo/models/subscriber";
-import { RateController } from "../controller/rateContoller";
+import { getRate } from "../services/rate";
+import { RatesNameKey, RatesNamesMap } from "../model";
 
 const { Telegraf } = require("telegraf");
 
@@ -20,9 +21,40 @@ const bot: typeof Telegraf = new Telegraf(process.env.BOT_TOKEN);
 const sendMessage = (ctx: Context, message: string) => {
   ctx.telegram.sendMessage(ctx.chat?.id!, message);
 };
+const subscribeCallback = async (ctx: Context) => {
+  const sub = ctx.chat as unknown as ISubscriber;
 
-const dollarCallback = async (ctx: Context) => {
-  const rate = await RateController.getRate("dolar");
+  const res = await SubscriberController.createSubscriber(sub);
+  let message = "Suscripcion exitosa";
+  if (!res) {
+    message = "Suscriptor ya registrado";
+  }
+  sendMessage(ctx, message);
+};
+
+const greetCallback = (ctx: Context) => {
+  const chat = ctx.chat as ISubscriber;
+
+  if (chat.username === "iWaldo") {
+    sendMessage(ctx, "Waldo come verga");
+    return;
+  }
+  sendMessage(ctx, getGreetingMessage(chat.first_name));
+};
+
+const unsubscribeCallback = async (ctx: Context) => {
+  const sub = ctx.chat as unknown as ISubscriber;
+  const res = await SubscriberController.deleteSubscriber(sub.id);
+  let message = "Desuscripcion exitosa";
+
+  if (!res) {
+    message = "Suscriptor no encontrado";
+  }
+  sendMessage(ctx, message);
+};
+
+const getRateCommand = async (ctx: Context, name: string) => {
+  const rate = await getRate(name);
 
   if (!rate) {
     ctx.telegram.sendMessage(
@@ -34,35 +66,18 @@ const dollarCallback = async (ctx: Context) => {
   const rateFormatted = formatData(rate);
   sendMessage(ctx, rateFormatted);
 };
-
-const subscribeCallback = async (ctx: Context) => {
-  const sub = ctx.chat as unknown as ISubscriber;
-
-  const res = await SubscriberController.createSubscriber(sub);
-  sendMessage(ctx, res);
-};
-
-const greetCallback = (ctx: Context) => {
-  const chat = ctx.chat as ISubscriber;
-  sendMessage(ctx, getGreetingMessage(chat.first_name));
-};
-
-const unsubscribeCallback = async (ctx: Context) => {
-  const sub = ctx.chat as unknown as ISubscriber;
-
-  const res = await SubscriberController.deleteSubscriber(sub.id);
-  sendMessage(ctx, res);
-};
-
 const commands: Command = {
-  dolar: dollarCallback,
   start: greetCallback,
   subscribe: subscribeCallback,
-  unsubscribeCallback: unsubscribeCallback,
+  unsubscribe: unsubscribeCallback,
 };
 
 const initializeCommands = () => {
   Object.keys(commands).forEach((k) => bot.command(k, commands[k]));
+
+  Object.values(RatesNamesMap).forEach((v) =>
+    bot.command(v, (ctx: Context) => getRateCommand(ctx, v))
+  );
 };
 
 const initializeTexts = () => {

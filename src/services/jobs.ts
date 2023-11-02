@@ -1,42 +1,23 @@
 import { RateController } from "../controller/rateContoller";
 import { SubscriberController } from "../controller/subscriberController";
+import { RatesNamesMap } from "../model";
 import { IRate } from "../mongo/models/rate";
 import { sendDollarUpdated } from "../telegram";
 import { formatData } from "../utils/formater";
 import { fetchDollarRate } from "./dolar";
 import cron from "node-cron";
 
-const ONE_MINUTE_MS = 1000 * 60;
-const TEN_MINUTES_MS = ONE_MINUTE_MS * 10;
-
-type Movement = {
-  increased: string;
-  decreased: string;
-};
-
-const movementMessage: Movement = {
-  increased: "El dolar aumento 📈:",
-  decreased: "El dolar bajo 📉:",
-};
-
-const isMarketTime = () => {
-  const now = new Date().getHours();
-
-  return now > 11 && now < 17;
-};
-
-const shouldSendRates = async (newAvg: number) => {
-  const oldRate = await RateController.getRate("dolar");
+const shouldSendRates = async (newVenta: string) => {
+  const oldRate = await RateController.getRate(RatesNamesMap.DOLAR);
   if (!oldRate) {
     return false;
   }
-  return newAvg !== (oldRate as IRate).avg;
+  return parseInt(newVenta) !== parseInt((oldRate as IRate).venta);
 };
 
 const getTextToSend = async (rate: IRate) => {
-  const messageMovement = await messageMovementFormatter(rate.avg);
   const dataFormated = formatData(rate);
-  return `${messageMovement}\n${dataFormated}`;
+  return `${dataFormated}`;
 };
 
 const sendAllMessages = async (rate: IRate) => {
@@ -52,31 +33,13 @@ const sendAllMessages = async (rate: IRate) => {
 
 const getDollarRates = async () => {
   const rate = await fetchDollarRate();
-  const shouldSendMessages = await shouldSendRates(rate.avg);
+  const shouldSendMessages = await shouldSendRates(rate.venta);
 
   if (shouldSendMessages) {
     await sendAllMessages(rate);
   }
 
-  await RateController.updateRate("dolar", rate);
-};
-
-const getPollingDollarRates = async () => {
-  await getDollarRates();
-  setInterval(async () => {
-    await getDollarRates();
-  }, TEN_MINUTES_MS);
-};
-
-const messageMovementFormatter = async (newAvg: number) => {
-  const oldRate = await RateController.getRate("dolar");
-  const oldAvg = oldRate?.avg ?? 0;
-  const movement: keyof Movement = newAvg > oldAvg ? "increased" : "decreased";
-  const message = movementMessage[movement];
-
-  const mvmtPercentage = (newAvg * 100) / oldAvg - 100;
-
-  return `${message} ${mvmtPercentage}`;
+  await RateController.updateRate(RatesNamesMap.DOLAR, rate);
 };
 
 cron.schedule("*/10 11-17 * * 1-5", async () => await getDollarRates(), {

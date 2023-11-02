@@ -1,31 +1,24 @@
 import { ISubscriber, Subscriber } from "../mongo/models/subscriber";
+import { MongoServerError } from "mongodb";
 
 const findById = async (id: number) => {
   return await Subscriber.findOne({ id });
 };
 
 const createSubscriber = async (subscriber: ISubscriber) => {
-  const alreadyUser = await findById(subscriber.id);
-
-  if (!!alreadyUser) {
-    return "Usuario ya suscrito";
+  try {
+    const user = await Subscriber.create(subscriber);
+    return user;
+  } catch (e) {
+    if ((e as MongoServerError).code === 11000) {
+      return;
+    }
   }
-
-  const newSubscriber = new Subscriber(subscriber);
-  await newSubscriber.save();
-
-  return "Usuario suscrito con exito!!";
 };
 
 const deleteSubscriber = async (subscriberId: number) => {
-  const sub = await findById(subscriberId);
-
-  if (!sub) {
-    return "Usuario no se encuentra suscrito";
-  }
-
-  await sub.deleteOne();
-  return "Usuario desuscrito con exito";
+  const sub = await Subscriber.findOneAndDelete({ id: subscriberId });
+  return sub;
 };
 
 const findAll = async () => {
