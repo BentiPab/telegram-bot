@@ -13,7 +13,7 @@ const subscriberSchema = new Schema<ISubscriber>(
     id: { type: Number, required: true, unique: true },
     first_name: { type: String, required: true },
     last_name: { type: String, required: false },
-    username: { type: String, required: true },
+    username: { type: String, required: false },
     type: { type: String, required: false },
   },
   { id: false, timestamps: false, versionKey: false }

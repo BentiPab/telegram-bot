@@ -21,3 +21,10 @@ export const GREETING_MESSAGE = `Hola! Los comandos disponibles son los siguient
   /dolar: Para recibir el valor del dolar
   /subscribe: para recibir una actualizacion cada 10min durante horario de mercado
   /unsubscribe: para dejar de recibir actualizaciones`;
+
+export const getGreetingMessage = (userName: string) => {
+  return `Hola ${userName}! Los comandos disponibles son los siguientes:
+  /dolar para recibir el valor del dolar
+  /subscribe para recibir una actualizacion cada 10min durante horario de mercado
+  /unsubscribe para dejar de recibir actualizaciones`;
+};

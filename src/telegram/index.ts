@@ -1,5 +1,9 @@
 import { Context } from "telegraf";
-import { GREETING_MESSAGE, formatData } from "../utils/formater";
+import {
+  GREETING_MESSAGE,
+  formatData,
+  getGreetingMessage,
+} from "../utils/formater";
 import { message } from "telegraf/filters";
 import { SubscriberController } from "../controller/subscriberController";
 import { ISubscriber } from "../mongo/models/subscriber";
@@ -24,7 +28,7 @@ bot.command("dolar", async (ctx: Context) => {
 });
 
 bot.command("start", async (ctx: Context) => {
-  ctx.telegram.sendMessage(ctx.chat?.id!, GREETING_MESSAGE);
+  sendGreetMessage(ctx);
 });
 
 bot.command("subscribe", async (ctx: Context) => {
@@ -42,11 +46,16 @@ bot.command("unsubscribe", async (ctx: Context) => {
   ctx.telegram.sendMessage(ctx.chat?.id!, res);
 });
 bot.on(message("text"), async (ctx: Context) => {
-  ctx.telegram.sendMessage(ctx.chat?.id!, GREETING_MESSAGE);
+  sendGreetMessage(ctx);
 });
 
 export const sendDollarUpdated = (chatId: number, message: string) => {
   bot.telegram.sendMessage(chatId, message);
+};
+
+const sendGreetMessage = (ctx: Context) => {
+  const chat = ctx.chat as ISubscriber;
+  ctx.telegram.sendMessage(chat.id, getGreetingMessage(chat.first_name));
 };
 
 bot.launch();

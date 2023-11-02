@@ -14,8 +14,8 @@ type Movement = {
 };
 
 const movementMessage: Movement = {
-  increased: "El dolar aumento:",
-  decreased: "El dolar bajo:",
+  increased: "El dolar aumento 📈:",
+  decreased: "El dolar bajo 📉:",
 };
 
 const isMarketTime = () => {
@@ -32,8 +32,8 @@ const shouldSendRates = async (newAvg: number) => {
   return newAvg !== (oldRate as IRate).avg && isMarketTime();
 };
 
-const getTextToSend = (rate: IRate) => {
-  const messageMovement = messageMovementFormatter(rate.avg);
+const getTextToSend = async (rate: IRate) => {
+  const messageMovement = await messageMovementFormatter(rate.avg);
   const dataFormated = formatData(rate);
   return `${messageMovement}\n${dataFormated}`;
 };
@@ -41,7 +41,7 @@ const getTextToSend = (rate: IRate) => {
 const sendAllMessages = async (rate: IRate) => {
   const subs = await SubscriberController.findAll();
   const subsIds = subs.map((s) => s.id);
-  const messageToSend = getTextToSend(rate);
+  const messageToSend = await getTextToSend(rate);
   const promises = subsIds.map(async (sid) =>
     sendDollarUpdated(sid, messageToSend)
   );
