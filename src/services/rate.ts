@@ -14,10 +14,14 @@ const fetchersMap: RateFetcherMap = {
   euro_oficial: fetchEuroOficialRate,
 };
 
+export const fetchRate = async (name: string) => {
+  return await fetchersMap[name]();
+};
+
 export const getRate = async (name: string) => {
   const dbRate = await RateController.getRate(name);
   if (dbRate === null) {
-    const newRate = await fetchersMap[name]();
+    const newRate = await fetchRate(name);
     return await RateController.createRate(newRate);
   }
 

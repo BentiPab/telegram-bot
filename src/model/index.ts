@@ -1,9 +1,15 @@
 import { IRate } from "../mongo/models/rate";
 
-export type RateType = Omit<IRate, "valorCierreAnt" | "avg"> & {
+export type RateType = Omit<IRate, "valorCierreAnt"> & {
   valor_cierre_ant: string;
   "class-variacion": string;
 };
+
+export type RatesNamesParsed =
+  | "Euro Oficial"
+  | "Dolar Oficial"
+  | "Dolar Blue"
+  | "Euro Blue";
 
 export type RatesNameKey = "DOLAR" | "EURO" | "EURO_OFICIAL" | "DOLAR_OFICIAL";
 export type RatesNameValue =

@@ -1,47 +1,57 @@
 import { RateController } from "../controller/rateContoller";
-import { SubscriberController } from "../controller/subscriberController";
 import { RatesNamesMap } from "../model";
 import { IRate } from "../mongo/models/rate";
-import { sendDollarUpdated } from "../telegram";
-import { formatData } from "../utils/formater";
-import { fetchDollarRate } from "./dolar";
+import { sendRateUpdates } from "../telegram";
+import { formatRateToMessage } from "../utils/formater";
 import cron from "node-cron";
+import { fetchRate } from "./rate";
 
-const shouldSendRates = async (newVenta: string) => {
-  const oldRate = await RateController.getRate(RatesNamesMap.DOLAR);
+const shouldSendRates = async (newRate: IRate) => {
+  const oldRate = await RateController.getRate(newRate.name);
   if (!oldRate) {
-    return false;
+    await RateController.createRate(newRate);
+    return true;
   }
-  return parseInt(newVenta) !== parseInt((oldRate as IRate).venta);
-};
 
-const getTextToSend = async (rate: IRate) => {
-  const dataFormated = formatData(rate);
-  return `${dataFormated}`;
+  if (!newRate.fecha.match(oldRate.fecha)) {
+    await RateController.updateRate(newRate.name, newRate);
+    return true;
+  }
+  return false;
 };
 
 const sendAllMessages = async (rate: IRate) => {
-  const subs = await SubscriberController.findAll();
+  const subs = await RateController.getRateSubscribers(rate.name);
   const subsIds = subs.map((s) => s.id);
-  const messageToSend = await getTextToSend(rate);
+  const messageToSend = formatRateToMessage(rate);
   const promises = subsIds.map(async (sid) =>
-    sendDollarUpdated(sid, messageToSend)
+    sendRateUpdates(sid, messageToSend)
   );
 
   await Promise.allSettled(promises);
 };
 
-const getDollarRates = async () => {
-  const rate = await fetchDollarRate();
-  const shouldSendMessages = await shouldSendRates(rate.venta);
+const getRateUpdates = async () => {
+  const promises = Object.values(RatesNamesMap).map(async (v) => {
+    const rate = await fetchRate(v);
+    const shouldSendMessages = await shouldSendRates(rate);
+    if (shouldSendMessages) {
+      await sendAllMessages(rate);
+    }
+  });
 
-  if (shouldSendMessages) {
-    await sendAllMessages(rate);
-  }
-
-  await RateController.updateRate(RatesNamesMap.DOLAR, rate);
+  await Promise.allSettled(promises);
 };
 
-cron.schedule("*/10 11-17 * * 1-5", async () => await getDollarRates(), {
+const UPDATE_CRON_TIMES = "10/10 11-19 * * 1-5";
+const START_CRON_TIMES = "0 11 * * 1-5";
+
+cron.schedule(UPDATE_CRON_TIMES, async () => await getRateUpdates(), {
   timezone: "America/Buenos_Aires",
+  name: "Poll Dollar Rates",
+});
+
+cron.schedule(START_CRON_TIMES, async () => await getRateUpdates(), {
+  timezone: "America/Buenos_Aires",
+  name: "Poll Dollar Rates",
 });

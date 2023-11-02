@@ -1,27 +1,29 @@
-import {
-  RateType,
-  RatesNameKey,
-  RatesNameValue,
-  RatesNamesMap,
-} from "../model";
+import { RateType, RatesNameValue, RatesNamesParsed } from "../model";
 import { IRate } from "../mongo/models/rate";
+import { Markup } from "telegraf";
 
 export const parseVariation = (variation: string) => {
   variation.replace("%", "").replace(",", ".");
   return parseFloat(variation);
 };
 
-export const nameParser: { [k in RatesNameValue]: string } = {
+export const nameParser: { [k in RatesNameValue]: RatesNamesParsed } = {
   euro_oficial: "Euro Oficial",
   dolar_oficial: "Dolar Oficial",
   dolar: "Dolar Blue",
   euro: "Euro Blue",
 };
 
-export const formatData = (data: IRate) => {
-  const { compra, venta, fecha, valorCierreAnt, variacion, avg, name } = data;
+export const getInlineKeyboardOptions = Object.keys(nameParser).map((k) => [
+  Markup.button.callback(nameParser[k as keyof typeof nameParser], k),
+]);
+export const getNamesParsedArray = Object.values(nameParser).map((v) => v);
+
+export const formatRateToMessage = (data: IRate) => {
+  const { compra, venta, fecha, valorCierreAnt, variacion, name } = data;
   const formattedVariation = parseVariation(variacion);
   const parsedName = nameParser[name as RatesNameValue];
+  const avg = calculateAvg(compra, venta);
   const movimiento =
     formattedVariation === 0
       ? "se mantuvo"
@@ -38,12 +40,10 @@ Ultima actualizacion: ${fecha}`;
 };
 
 export const parseData = (data: RateType, name: string): IRate => {
-  const avg = getAvg(data);
-  return { ...data, avg, valorCierreAnt: data.valor_cierre_ant, name };
+  return { ...data, valorCierreAnt: data.valor_cierre_ant, name };
 };
 
-export const getAvg = (data: RateType) => {
-  const { compra, venta } = data;
+export const calculateAvg = (compra: string, venta: string) => {
   const compraParsed = parseFloat(compra);
   const ventaParsed = parseFloat(venta);
   return ((compraParsed + ventaParsed) / 2).toFixed(2).toString();
@@ -60,7 +60,7 @@ export const getGreetingMessage = (userName: string) => {
   /dolar_oficial para recibir valor del dolar oficial
   /euro para recibir valor del euro blue
   /euro_oficial para recibir valor del euro oficial
-  /subscribe para recibir actualizacion dolar blue cuando la moneda fluctua
-  /unsubscribe para dejar de recibir actualizaciones
+  /subscribe para recibir actualizacion de la moneda que desee
+  /unsubscribe para dejar de recibir actualizaciones de la moneda que desee
   /start para recibir nuevamente este mensaje`;
 };

@@ -1,75 +1,103 @@
-import { Context } from "telegraf";
-import { formatData, getGreetingMessage } from "../utils/formater";
-import { message } from "telegraf/filters";
-import { SubscriberController } from "../controller/subscriberController";
-import { ISubscriber } from "../mongo/models/subscriber";
+import { Context, Telegraf, Markup } from "telegraf";
+import {
+  formatRateToMessage,
+  getGreetingMessage,
+  getInlineKeyboardOptions,
+  nameParser,
+} from "../utils/formater";
+import { message, callbackQuery } from "telegraf/filters";
 import { getRate } from "../services/rate";
 import { RatesNamesMap } from "../model";
+import {
+  CallbackQuery,
+  Message,
+  User,
+} from "telegraf/typings/core/types/typegram";
+import { RateController } from "../controller/rateContoller";
 
-const { Telegraf } = require("telegraf");
+const bot = new Telegraf(process.env.BOT_TOKEN!);
 
-type Command = {
-  [k: string]: (ctx: Context) => Promise<void> | void;
+const subscribeCallback = async (
+  ctx: Context,
+  type: "subscribe" | "desuscribe"
+) => {
+  const message =
+    type === "subscribe"
+      ? "A cual desea suscribirse?"
+      : "De cual desea desuscribirse";
+  await ctx.reply(message, {
+    parse_mode: "HTML",
+    ...Markup.inlineKeyboard(getInlineKeyboardOptions),
+  });
 };
 
-const bot: typeof Telegraf = new Telegraf(process.env.BOT_TOKEN);
+const subscriptionCommandHandler = async (ctx: Context) => {
+  const callbackQuery = ctx.callbackQuery as CallbackQuery.DataQuery;
+  const subRate = callbackQuery.data;
+  const from = callbackQuery.from;
+  const originalMessage = (callbackQuery.message as Message.TextMessage).text;
 
-const sendMessage = (ctx: Context, message: string) => {
-  ctx.telegram.sendMessage(ctx.chat?.id!, message);
-};
-const subscribeCallback = async (ctx: Context) => {
-  const sub = ctx.chat as unknown as ISubscriber;
+  const isSubscription = !originalMessage.includes("desuscribirse");
+  let message = "";
 
-  const res = await SubscriberController.createSubscriber(sub);
-  let message = "Suscripcion exitosa";
-  if (!res) {
-    message = "Suscriptor ya registrado";
+  if (isSubscription) {
+    message = await subscribeToRate(subRate, from);
+  } else {
+    message = await unsuscribeFromRate(subRate, from);
   }
-  sendMessage(ctx, message);
+
+  ctx.answerCbQuery();
+  ctx.editMessageReplyMarkup(undefined);
+  ctx.reply(message);
+};
+
+const subscribeToRate = async (rateName: string, from: User) => {
+  const res = await RateController.subscribeToRate(rateName, from);
+  const rateParsed = nameParser[rateName as keyof typeof nameParser];
+
+  return !res
+    ? `Suscriptor ya suscrito a ${rateParsed}`
+    : `Suscripcion a ${rateParsed} exitosa\nRecibira actualizacion en el horario de mercado, y si el valor modifica`;
+};
+
+const unsuscribeFromRate = async (rateName: string, from: User) => {
+  const res = await RateController.unsubscribeFromRate(rateName, from);
+  const rateParsed = nameParser[rateName as keyof typeof nameParser];
+
+  return !res
+    ? `Suscriptor no suscrito a ${rateParsed}`
+    : `Desuscripcion a ${rateParsed} exitosa`;
 };
 
 const greetCallback = (ctx: Context) => {
-  const chat = ctx.chat as ISubscriber;
+  const user = (ctx.message as Message.TextMessage).from!;
 
-  if (chat.username === "iWallas") {
-    sendMessage(ctx, "Waldo come verga");
+  if (user.username === "iWallas") {
+    ctx.reply("Waldo come verga");
     return;
   }
-  sendMessage(ctx, getGreetingMessage(chat.first_name));
-};
-
-const unsubscribeCallback = async (ctx: Context) => {
-  const sub = ctx.chat as unknown as ISubscriber;
-  const res = await SubscriberController.deleteSubscriber(sub.id);
-  let message = "Desuscripcion exitosa";
-
-  if (!res) {
-    message = "Suscriptor no encontrado";
-  }
-  sendMessage(ctx, message);
+  ctx.reply(getGreetingMessage(user.first_name));
 };
 
 const getRateCommand = async (ctx: Context, name: string) => {
   const rate = await getRate(name);
 
   if (!rate) {
-    ctx.telegram.sendMessage(
-      ctx.chat?.id!,
-      "Hubo un problema, intente mas tarde"
-    );
+    ctx.reply("Hubo un problema, intente mas tarde");
     return;
   }
-  const rateFormatted = formatData(rate);
-  sendMessage(ctx, rateFormatted);
-};
-const commands: Command = {
-  start: greetCallback,
-  subscribe: subscribeCallback,
-  unsubscribe: unsubscribeCallback,
+  const rateFormatted = formatRateToMessage(rate);
+  ctx.reply(rateFormatted);
 };
 
 const initializeCommands = () => {
-  Object.keys(commands).forEach((k) => bot.command(k, commands[k]));
+  bot.command("start", greetCallback);
+  bot.command("subscribe", (ctx: Context) =>
+    subscribeCallback(ctx, "subscribe")
+  );
+  bot.command("unsubscribe", (ctx: Context) =>
+    subscribeCallback(ctx, "desuscribe")
+  );
 
   Object.values(RatesNamesMap).forEach((v) =>
     bot.command(v, (ctx: Context) => getRateCommand(ctx, v))
@@ -78,9 +106,10 @@ const initializeCommands = () => {
 
 const initializeTexts = () => {
   bot.on(message("text"), greetCallback);
+  bot.on(callbackQuery("data"), subscriptionCommandHandler);
 };
 
-export const sendDollarUpdated = (chatId: number, message: string) => {
+export const sendRateUpdates = (chatId: number, message: string) => {
   bot.telegram.sendMessage(chatId, message);
 };
 

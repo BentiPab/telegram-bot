@@ -1,2 +1,1 @@
-require("./subscriber");
 require("./rate");
