@@ -79,6 +79,6 @@ const messageMovementFormatter = async (newAvg: number) => {
   return `${message} ${mvmtPercentage}`;
 };
 
-cron.schedule("1/10 11-17 * * 1-5", async () => await getDollarRates(), {
+cron.schedule("*/10 11-17 * * 1-5", async () => await getDollarRates(), {
   timezone: "America/Buenos_Aires",
 });
