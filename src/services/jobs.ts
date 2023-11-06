@@ -5,17 +5,16 @@ import { sendRateUpdates } from "../telegram";
 import { formatRateToMessage } from "../utils/formater";
 import cron from "node-cron";
 import { fetchRate } from "./rate";
+import { UsersController } from "../controller/userController";
 
 const shouldSendRates = async (newRate: IRate, skipCheck: boolean) => {
   const oldRate = await RateController.getRate(newRate.name);
   if (!oldRate) {
-    console.log("update");
     await RateController.createRate(newRate);
     return true;
   }
 
   if (!newRate.fecha.match(oldRate.fecha) || skipCheck) {
-    console.log("update");
     await RateController.updateRate(newRate.name, newRate);
     return true;
   }
@@ -23,7 +22,10 @@ const shouldSendRates = async (newRate: IRate, skipCheck: boolean) => {
 };
 
 const sendAllMessages = async (rate: IRate) => {
-  const subs = await RateController.getRateSubscribers(rate.name);
+  const subs = await UsersController.findUsersByRate(rate.name);
+  if (!subs) {
+    return;
+  }
   const subsIds = subs.map((s) => s.id);
   const messageToSend = formatRateToMessage(rate);
   const promises = subsIds.map(async (sid) =>
@@ -50,10 +52,10 @@ const START_CRON_TIMES = "0 11 * * 1-5";
 
 cron.schedule(UPDATE_CRON_TIMES, async () => await getRateUpdates(), {
   timezone: "America/Buenos_Aires",
-  name: "Poll Dollar Rates",
+  name: "Poll Dollar Rates Daily run",
 });
 
 cron.schedule(START_CRON_TIMES, async () => await getRateUpdates(true), {
   timezone: "America/Buenos_Aires",
-  name: "Poll Dollar Rates",
+  name: "Poll Dollar Rates Start day",
 });

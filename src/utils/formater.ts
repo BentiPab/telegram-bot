@@ -2,9 +2,20 @@ import { RateType, RatesNameValue, RatesNamesParsed } from "../model";
 import { IRate } from "../mongo/models/rate";
 import { Markup } from "telegraf";
 
-export const parseVariation = (variation: string) => {
-  variation.replace("%", "").replace(",", ".");
-  return parseFloat(variation);
+const BULLET_POINT = "\u2022";
+
+export const parseVariationToMovementMessage = (variation: string) => {
+  const formatted = variation.replace("%", "").replace(",", ".");
+
+  if (formatted.includes("-")) {
+    return "bajo 📉";
+  }
+
+  if (formatted === "0.00") {
+    return "se mantuvo";
+  }
+
+  return "aumento 📈";
 };
 
 export const nameParser: { [k in RatesNameValue]: RatesNamesParsed } = {
@@ -21,15 +32,10 @@ export const getNamesParsedArray = Object.values(nameParser).map((v) => v);
 
 export const formatRateToMessage = (data: IRate) => {
   const { compra, venta, fecha, valorCierreAnt, variacion, name } = data;
-  const formattedVariation = parseVariation(variacion);
+  const movimiento = parseVariationToMovementMessage(variacion);
   const parsedName = nameParser[name as RatesNameValue];
   const avg = calculateAvg(compra, venta);
-  const movimiento =
-    formattedVariation === 0
-      ? "se mantuvo"
-      : formattedVariation < 0
-      ? `bajo 📉`
-      : "aumento 📈";
+
   return `El ${parsedName} ${movimiento}
 Variacion con ultimo cierre: ${variacion}
 ${valorCierreAnt && `Valor venta cierre anterior: ${valorCierreAnt}`}
@@ -37,6 +43,21 @@ Compra: ${compra}
 Venta: ${venta}
 Promedio: ${avg}
 Ultima actualizacion: ${fecha}`;
+};
+
+export const formatSubsMessage = (data: IRate[]) => {
+  if (data.length) {
+    const mappedRates = data
+      .map(
+        (r) =>
+          `${BULLET_POINT}${nameParser[r.name as keyof typeof nameParser]}\n`
+      )
+      .join(" ");
+
+    return `Usted esta suscrito a las siguientes actualizaciones:\n${mappedRates}`;
+  } else {
+    return "Usted no cuenta con ninguna suscripcion aun, ingrese /subscribe para comenzar";
+  }
 };
 
 export const parseData = (data: RateType, name: string): IRate => {

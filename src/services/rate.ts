@@ -19,11 +19,10 @@ export const fetchRate = async (name: string) => {
 };
 
 export const getRate = async (name: string) => {
-  const dbRate = await RateController.getRate(name);
-  if (dbRate === null) {
+  try {
+    return await RateController.getRate(name);
+  } catch (e) {
     const newRate = await fetchRate(name);
     return await RateController.createRate(newRate);
   }
-
-  return dbRate;
 };

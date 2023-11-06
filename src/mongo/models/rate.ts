@@ -10,7 +10,6 @@ export interface IRate {
   fecha: string;
   variacion: string;
   valorCierreAnt: string;
-  subscribers: User[];
 }
 
 const rateSchema = new Schema<IRate>(
@@ -21,17 +20,6 @@ const rateSchema = new Schema<IRate>(
     fecha: { type: String, required: true },
     variacion: { type: String, required: true },
     valorCierreAnt: { type: String, required: false },
-    subscribers: {
-      type: [
-        {
-          id: { type: Number, required: true },
-          first_name: { type: String, required: true },
-          last_name: { type: String, required: false },
-          username: { type: String, required: false },
-        },
-      ],
-      default: [],
-    },
   },
   { id: false, versionKey: false, timestamps: true }
 );
