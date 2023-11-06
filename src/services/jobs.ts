@@ -6,14 +6,16 @@ import { formatRateToMessage } from "../utils/formater";
 import cron from "node-cron";
 import { fetchRate } from "./rate";
 
-const shouldSendRates = async (newRate: IRate) => {
+const shouldSendRates = async (newRate: IRate, skipCheck: boolean) => {
   const oldRate = await RateController.getRate(newRate.name);
   if (!oldRate) {
+    console.log("update");
     await RateController.createRate(newRate);
     return true;
   }
 
-  if (!newRate.fecha.match(oldRate.fecha)) {
+  if (!newRate.fecha.match(oldRate.fecha) || skipCheck) {
+    console.log("update");
     await RateController.updateRate(newRate.name, newRate);
     return true;
   }
@@ -31,10 +33,10 @@ const sendAllMessages = async (rate: IRate) => {
   await Promise.allSettled(promises);
 };
 
-const getRateUpdates = async () => {
+const getRateUpdates = async (skipCheck = false) => {
   const promises = Object.values(RatesNamesMap).map(async (v) => {
     const rate = await fetchRate(v);
-    const shouldSendMessages = await shouldSendRates(rate);
+    const shouldSendMessages = await shouldSendRates(rate, skipCheck);
     if (shouldSendMessages) {
       await sendAllMessages(rate);
     }
@@ -51,7 +53,7 @@ cron.schedule(UPDATE_CRON_TIMES, async () => await getRateUpdates(), {
   name: "Poll Dollar Rates",
 });
 
-cron.schedule(START_CRON_TIMES, async () => await getRateUpdates(), {
+cron.schedule(START_CRON_TIMES, async () => await getRateUpdates(true), {
   timezone: "America/Buenos_Aires",
   name: "Poll Dollar Rates",
 });

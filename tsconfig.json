@@ -1,5 +1,6 @@
 {
 	"compilerOptions": {
+		"declaration": true,
 		"module": "commonjs",
 		"esModuleInterop": true,
 		"target": "es6",
@@ -9,7 +10,9 @@
 		"moduleResolution": "node",
 		"sourceMap": true,
 		"resolveJsonModule": true,
-		"noErrorTruncation": true
+		"noErrorTruncation": true,
+		"outDir": "dist",
+		"declarationDir": "dist",
 	},
 	"exclude": ["node_modules", ".vscode"]
   }

@@ -9,7 +9,7 @@ const updateRate = async (name: string, updatedRate: IRate) => {
       $set: updatedRate,
     }
   );
-
+  console.log(rate);
   if (!rate) {
     return "rate not found";
   }

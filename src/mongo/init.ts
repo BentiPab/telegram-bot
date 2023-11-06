@@ -5,9 +5,9 @@ const mongoose = require("mongoose");
 const mongoUrl = process.env.MONGO_URL;
 
 const main = async () => {
-  await mongoose.connect(mongoUrl, { dbName: "telegram-bot-dolar" });
+  await mongoose.connect(mongoUrl, { dbName: process.env.MONGO_DB_NAME });
 
   await initRateCollection();
 };
 
-main();
+export { main };

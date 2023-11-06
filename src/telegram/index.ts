@@ -113,6 +113,8 @@ export const sendRateUpdates = (chatId: number, message: string) => {
   bot.telegram.sendMessage(chatId, message);
 };
 
+bot.telegram.setWebhook(`${process.env.URL}${process.env.WEBHOOK_PATH}`);
+
 const initBot = () => {
   initializeCommands();
   initializeTexts();
@@ -120,3 +122,5 @@ const initBot = () => {
 };
 
 initBot();
+
+export default bot;
