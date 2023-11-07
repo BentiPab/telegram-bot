@@ -1,19 +1,19 @@
 import express from "express";
-import bot from "../src/telegram";
+import bot from "../telegram";
 import bodyParser from "body-parser";
-import logger from "../src/logger";
+import logger from "../logger";
 
 const app = express();
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bot.webhookCallback(`/api/${process.env.WEBHOOK_PATH!}`));
-app.get("/api", (req, res) => {
+app.use(bot.webhookCallback(`/${process.env.WEBHOOK_PATH!}`));
+app.get("/", (req, res) => {
   res.send(bot.telegram.getWebhookInfo());
   res.send("Working!!");
 });
 
-app.post(`/api/${process.env.WEBHOOK_PATH!}`, (req, res) => {
+app.post(`/${process.env.WEBHOOK_PATH!}`, (req, res) => {
   bot.handleUpdate(req.body, res);
 });
 

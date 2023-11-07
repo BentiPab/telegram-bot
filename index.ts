@@ -1,2 +1,2 @@
 import "./src/index";
-import "./api/index";
+import "./src/api/index";
