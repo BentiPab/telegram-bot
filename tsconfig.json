@@ -13,6 +13,7 @@
 		"noErrorTruncation": true,
 		"outDir": "public",
 		"declarationDir": "public",
+		"ignoreDeprecations": "5.0",
 		"noImplicitUseStrict": true
 	},
 	"exclude": ["node_modules", ".vscode"]
