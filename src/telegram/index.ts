@@ -133,7 +133,6 @@ bot.telegram.setWebhook(`${process.env.URL}api/${process.env.WEBHOOK_PATH}`);
 const initBot = () => {
   initializeCommands();
   initializeTexts();
-  logger.log("info", "Bot initialize");
   bot.launch();
 };
 
