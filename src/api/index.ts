@@ -16,3 +16,5 @@ app.post(process.env.WEBHOOK_PATH!, (req, res) => {
 app.listen(process.env.PORT || 3000, () => {
   console.log(`Running on port ${process.env.PORT || 3000}`);
 });
+
+module.exports = app;

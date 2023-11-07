@@ -73,8 +73,9 @@ const unsuscribeFromRate = async (rateName: RatesNameValue, from: User) => {
 
 const greetCallback = async (ctx: Context) => {
   const user = (ctx.message as Message.TextMessage).from!;
-
-  await UsersController.createUser(user);
+  try {
+    await UsersController.createUser(user);
+  } catch (e) {}
 
   if (user.username === "iWallas") {
     ctx.reply("Waldo come verga");

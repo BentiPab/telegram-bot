@@ -83,5 +83,6 @@ export const getGreetingMessage = (userName: string) => {
   /euro_oficial para recibir valor del euro oficial
   /subscribe para recibir actualizacion de la moneda que desee
   /unsubscribe para dejar de recibir actualizaciones de la moneda que desee
+  /mySubscriptions para ver la lista de suscripciones actuales
   /start para recibir nuevamente este mensaje`;
 };
