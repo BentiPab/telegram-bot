@@ -4,7 +4,6 @@ const LOG_LEVELS = ["error", "info"];
 
 const logger = new Logger({
   transports: [
-    new transports.Console({ level: "debug" }),
     ...LOG_LEVELS.map(
       (ll) =>
         new transports.File({

@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import logger from "../logger";
 
 class MongoConnector {
   private static instance: MongoConnector;
@@ -11,14 +12,13 @@ class MongoConnector {
     const connectionURI = process.env.MONGO_URL;
 
     try {
-      console.log("Connecting to mongo...");
+      logger.log("info", "Connecting to mongo...");
       await mongoose.connect(connectionURI!, {
         dbName: process.env.MONGO_DB_NAME,
       });
-      console.log("Connected to mongo");
+      logger.log("info", "Connected to mongo");
     } catch (error: any) {
-      console.log("Mongo connection error");
-      console.log(error);
+      logger.log("error", (error as Error).message);
     }
   };
 

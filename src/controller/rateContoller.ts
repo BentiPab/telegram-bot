@@ -1,4 +1,4 @@
-import { MongoServerError } from "mongodb";
+import logger from "../logger";
 import { IRate, Rate } from "../mongo/models/rate";
 
 const updateRate = async (name: string, updatedRate: IRate) => {
@@ -8,7 +8,7 @@ const updateRate = async (name: string, updatedRate: IRate) => {
       $set: updatedRate,
     }
   );
-  console.log(rate);
+  logger.log("info", `${name} updated`);
   if (!rate) {
     return "rate not found";
   }
@@ -29,9 +29,7 @@ const createRate = async (newRate: IRate) => {
   try {
     const rate = await Rate.create(newRate);
     return rate;
-  } catch (e) {
-    console.log(e);
-  }
+  } catch (e) {}
 };
 
 export const RateController = {

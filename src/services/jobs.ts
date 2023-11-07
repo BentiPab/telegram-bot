@@ -6,6 +6,7 @@ import { formatRateToMessage } from "../utils/formater";
 import cron from "node-cron";
 import { fetchRate } from "./rate";
 import { UsersController } from "../controller/userController";
+import logger from "../logger";
 
 const shouldSendRates = async (newRate: IRate, skipCheck: boolean) => {
   const oldRate = await RateController.getRate(newRate.name);
@@ -36,31 +37,45 @@ const sendAllMessages = async (rate: IRate) => {
 };
 
 const getRateUpdates = async (skipCheck = false) => {
-  console.log(skipCheck, "job");
-  const promises = Object.values(RatesNamesMap).map(async (v) => {
-    const rate = await fetchRate(v);
-    const shouldSendMessages = await shouldSendRates(rate, skipCheck);
-    if (shouldSendMessages) {
-      await sendAllMessages(rate);
-    }
-  });
-
-  await Promise.allSettled(promises);
+  try {
+    const promises = Object.values(RatesNamesMap).map(async (v) => {
+      const rate = await fetchRate(v);
+      const shouldSendMessages = await shouldSendRates(rate, skipCheck);
+      if (shouldSendMessages) {
+        await sendAllMessages(rate);
+      }
+    });
+    await Promise.allSettled(promises);
+    logger.log("info", `${skipCheck ? "daily" : "10min"} Job ran`);
+  } catch (e) {
+    logger.log("error", (e as Error).message);
+  }
 };
 
 const UPDATE_CRON_TIMES = "10/10 11-19 * * 1-5";
-const START_CRON_TIMES = "0 13 * * 1-5";
+const START_CRON_TIMES = "0 11 * * 1-5";
 
-cron
-  .schedule(UPDATE_CRON_TIMES, async () => await getRateUpdates(), {
+const tenMinJob = cron.schedule(
+  UPDATE_CRON_TIMES,
+  async () => await getRateUpdates(),
+  {
     timezone: "America/Buenos_Aires",
     name: "Poll Dollar Rates Daily run",
-  })
-  .start();
+  }
+);
 
-cron
-  .schedule(START_CRON_TIMES, async () => await getRateUpdates(true), {
+const daily = cron.schedule(
+  START_CRON_TIMES,
+  async () => await getRateUpdates(true),
+  {
     timezone: "America/Buenos_Aires",
     name: "Poll Dollar Rates Start day",
-  })
-  .start();
+  }
+);
+
+const init = async () => {
+  daily.start();
+  tenMinJob.start();
+};
+
+init();
