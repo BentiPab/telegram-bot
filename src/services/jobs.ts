@@ -36,6 +36,7 @@ const sendAllMessages = async (rate: IRate) => {
 };
 
 const getRateUpdates = async (skipCheck = false) => {
+  console.log(skipCheck, "job");
   const promises = Object.values(RatesNamesMap).map(async (v) => {
     const rate = await fetchRate(v);
     const shouldSendMessages = await shouldSendRates(rate, skipCheck);
@@ -48,14 +49,18 @@ const getRateUpdates = async (skipCheck = false) => {
 };
 
 const UPDATE_CRON_TIMES = "10/10 11-19 * * 1-5";
-const START_CRON_TIMES = "0 11 * * 1-5";
+const START_CRON_TIMES = "0 13 * * 1-5";
 
-cron.schedule(UPDATE_CRON_TIMES, async () => await getRateUpdates(), {
-  timezone: "America/Buenos_Aires",
-  name: "Poll Dollar Rates Daily run",
-});
+cron
+  .schedule(UPDATE_CRON_TIMES, async () => await getRateUpdates(), {
+    timezone: "America/Buenos_Aires",
+    name: "Poll Dollar Rates Daily run",
+  })
+  .start();
 
-cron.schedule(START_CRON_TIMES, async () => await getRateUpdates(true), {
-  timezone: "America/Buenos_Aires",
-  name: "Poll Dollar Rates Start day",
-});
+cron
+  .schedule(START_CRON_TIMES, async () => await getRateUpdates(true), {
+    timezone: "America/Buenos_Aires",
+    name: "Poll Dollar Rates Start day",
+  })
+  .start();

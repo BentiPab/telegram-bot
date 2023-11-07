@@ -1,4 +1,4 @@
-import "./dolar";
-import "./euro";
-import "./jobs";
-import "./rate";
+require("./dolar");
+require("./euro");
+require("./jobs");
+require("./rate");

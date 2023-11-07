@@ -1,20 +1,56 @@
 import express from "express";
 import bot from "../telegram";
 import bodyParser from "body-parser";
+import MongoConnector from "../mongo";
 
-const app = express();
+class App {
+  private static instance: App;
+  private server: express.Express | undefined;
 
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
-app.get("/", (req, res) => {
-  res.send("Working!!");
-});
+  constructor() {
+    this.setExpress();
+    this.start(parseInt(process.env.PORT!) || 3000);
+  }
 
-app.post(`/${process.env.WEBHOOK_PATH!}`, (req, res) => {
-  bot.handleUpdate(req.body, res);
-});
-app.use(bot.webhookCallback(`/${process.env.WEBHOOK_PATH!}`));
+  private setExpress = () => {
+    this.server = express();
+    this.server.use(express.urlencoded({ extended: false }));
+    this.server.use(bodyParser.json({ limit: "50mb" }));
+    this.server.use(bodyParser.urlencoded({ extended: false, limit: "50mb" }));
 
-app.listen(process.env.PORT || 3000, () => {
-  console.log(`Running on port ${process.env.PORT || 3000}`);
-});
+    this.server.get("/", (req, res) => {
+      res.send("Working!!");
+    });
+
+    this.server.post(`/${process.env.WEBHOOK_PATH!}`, (req, res) => {
+      bot.handleUpdate(req.body, res);
+    });
+  };
+
+  public start(port: number): void {
+    if (!this.server) {
+      return;
+    }
+    this.server.listen(port, () => {
+      MongoConnector.init();
+    });
+  }
+
+  static getInstance = (): App => {
+    if (!App.instance) {
+      App.instance = new App();
+    }
+    return App.instance;
+  };
+
+  public getServer = () => {
+    if (!this.server) {
+      return;
+    }
+    return this.server;
+  };
+}
+
+App.getInstance();
+
+export default App;

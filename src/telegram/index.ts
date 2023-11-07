@@ -15,7 +15,10 @@ import {
   User,
 } from "telegraf/typings/core/types/typegram";
 import { UsersController } from "../controller/userController";
-import logger from "../logger";
+import App from "../app";
+
+const WEBHOOK_PATH = `/${process.env.WEBHOOK_PATH!}`;
+const WEBHOOK_URL = `${process.env.URL}${WEBHOOK_PATH}`;
 
 const bot = new Telegraf(process.env.BOT_TOKEN!);
 
@@ -129,10 +132,16 @@ export const sendRateUpdates = (chatId: number, message: string) => {
   bot.telegram.sendMessage(chatId, message);
 };
 
-bot.telegram.setWebhook(`${process.env.URL}/${process.env.WEBHOOK_PATH}`);
 const initBot = () => {
+  App.getInstance()
+    .getServer()
+    ?.use(bot.webhookCallback(`${WEBHOOK_PATH}`));
   initializeCommands();
   initializeTexts();
+
+  if (process.env.NODE_ENV === "production") {
+    bot.telegram.setWebhook(`${WEBHOOK_URL}`);
+  }
   bot.launch();
 };
 
