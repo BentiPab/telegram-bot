@@ -1,5 +1,5 @@
 import express from "express";
-import bot from "../telegram";
+import bot from "../src/telegram";
 import bodyParser from "body-parser";
 
 const app = express();
