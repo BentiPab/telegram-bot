@@ -1,11 +1,15 @@
 import express from "express";
 import bot from "../telegram";
+import bodyParser from "body-parser";
 
 const app = express();
 
 app.get("/", (req, res) => {
   res.send("Working!!");
 });
+
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use(bot.webhookCallback("/secret-path"));
 
