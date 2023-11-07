@@ -8,7 +8,7 @@ const logger = new Logger({
       (ll) =>
         new transports.File({
           level: ll,
-          filename: `logger/logs/${ll}.log`,
+          filename: `src/logger/logs/${ll}.log`,
         })
     ),
   ],
