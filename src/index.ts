@@ -1,3 +1,4 @@
+import "./env/index";
 import "./mongo/index";
 import "./telegram/index";
 import "./services/index";
