@@ -1,7 +1,6 @@
 import express from "express";
 import bot from "../telegram";
 import bodyParser from "body-parser";
-import logger from "../logger";
 
 const app = express();
 
@@ -9,7 +8,6 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bot.webhookCallback(`/${process.env.WEBHOOK_PATH!}`));
 app.get("/", (req, res) => {
-  res.send(bot.telegram.getWebhookInfo());
   res.send("Working!!");
 });
 
