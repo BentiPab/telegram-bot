@@ -7,11 +7,11 @@ const app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bot.webhookCallback("/secret-path"));
-app.get("/", (req, res) => {
+app.get("/api", (req, res) => {
   res.send("Working!!");
 });
 
-app.post(process.env.WEBHOOK_PATH!, (req, res) => {
+app.post(`/api/${process.env.WEBHOOK_PATH!}`, (req, res) => {
   bot.handleUpdate(req.body, res);
 });
 
