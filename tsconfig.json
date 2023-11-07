@@ -11,8 +11,8 @@
 		"sourceMap": true,
 		"resolveJsonModule": true,
 		"noErrorTruncation": true,
-		"outDir": "dist",
-		"declarationDir": "dist",
+		"outDir": "public",
+		"declarationDir": "public",
 	},
 	"exclude": ["node_modules", ".vscode"]
   }
