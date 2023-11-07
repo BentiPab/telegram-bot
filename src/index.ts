@@ -1,3 +1,4 @@
+require("./config/index");
 require("./env/index");
 require("./telegram/index");
 require("./app/index");

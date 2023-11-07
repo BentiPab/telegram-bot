@@ -1,7 +1,8 @@
 import axios from "axios";
 import { parseData } from "../utils/formater";
 import { RateType, RatesNamesMap } from "../model";
-const url = process.env.AMBITO_URL;
+import baseConfig from "../config";
+const url = baseConfig.App.AmbitoUrl;
 
 const euroUrlMapper = {
   EURO_OFICIAL_URL: `${url}/euro//variacion`,

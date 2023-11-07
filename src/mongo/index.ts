@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import logger from "../logger";
+import config from "../config/base.config";
 
 class MongoConnector {
   private static instance: MongoConnector;
@@ -9,12 +10,12 @@ class MongoConnector {
   }
 
   private connectToMongo = async () => {
-    const connectionURI = process.env.MONGO_URL;
+    const connectionURI = config.Mongo.Url;
 
     try {
       logger.log("info", "Connecting to mongo...");
       await mongoose.connect(connectionURI!, {
-        dbName: process.env.MONGO_DB_NAME,
+        dbName: config.Mongo.DbName,
       });
       logger.log("info", "Connected to mongo");
     } catch (error: any) {

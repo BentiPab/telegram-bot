@@ -16,11 +16,9 @@ import {
 } from "telegraf/typings/core/types/typegram";
 import { UsersController } from "../controller/userController";
 import App from "../app";
+import baseConfig from "../config";
 
-const WEBHOOK_PATH = `/${process.env.WEBHOOK_PATH!}`;
-const WEBHOOK_URL = `${process.env.URL}${WEBHOOK_PATH}`;
-
-const bot = new Telegraf(process.env.BOT_TOKEN!);
+const bot = new Telegraf(baseConfig.Telegram.BotToken);
 
 const subscribeCallback = async (
   ctx: Context,
@@ -135,12 +133,12 @@ export const sendRateUpdates = (chatId: number, message: string) => {
 const initBot = () => {
   App.getInstance()
     .getServer()
-    ?.use(bot.webhookCallback(`${WEBHOOK_PATH}`));
+    ?.use(bot.webhookCallback(baseConfig.App.WebhookPath));
   initializeCommands();
   initializeTexts();
 
-  if (process.env.NODE_ENV === "production") {
-    bot.telegram.setWebhook(`${WEBHOOK_URL}`);
+  if (baseConfig.App.Env === "production") {
+    bot.telegram.setWebhook(baseConfig.App.WebhookUrl);
   }
   bot.launch();
 };

@@ -2,6 +2,7 @@ import express from "express";
 import bot from "../telegram";
 import bodyParser from "body-parser";
 import MongoConnector from "../mongo";
+import config from "../config/base.config";
 
 class App {
   private static instance: App;
@@ -9,7 +10,7 @@ class App {
 
   constructor() {
     this.setExpress();
-    this.start(parseInt(process.env.PORT!) || 3000);
+    this.start(config.Port);
   }
 
   private setExpress = () => {
@@ -22,7 +23,7 @@ class App {
       res.send("Working!!");
     });
 
-    this.server.post(`/${process.env.WEBHOOK_PATH!}`, (req, res) => {
+    this.server.post(`/${config.App.WebhookPath}`, (req, res) => {
       bot.handleUpdate(req.body, res);
     });
   };
