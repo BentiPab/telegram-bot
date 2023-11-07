@@ -8,6 +8,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bot.webhookCallback(`/api/${process.env.WEBHOOK_PATH!}`));
 app.get("/api", (req, res) => {
+  res.send(process.env.WEBHOOK_PATH);
   res.send("Working!!");
 });
 
