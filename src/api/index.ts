@@ -6,7 +6,6 @@ const app = express();
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bot.webhookCallback(`/${process.env.WEBHOOK_PATH!}`));
 app.get("/", (req, res) => {
   res.send("Working!!");
 });
@@ -14,6 +13,7 @@ app.get("/", (req, res) => {
 app.post(`/${process.env.WEBHOOK_PATH!}`, (req, res) => {
   bot.handleUpdate(req.body, res);
 });
+app.use(bot.webhookCallback(`/${process.env.WEBHOOK_PATH!}`));
 
 app.listen(process.env.PORT || 3000, () => {
   console.log(`Running on port ${process.env.PORT || 3000}`);
