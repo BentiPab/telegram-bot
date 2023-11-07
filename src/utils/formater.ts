@@ -11,7 +11,7 @@ export const parseVariationToMovementMessage = (variation: string) => {
     return "bajo 📉";
   }
 
-  if (formatted === "0.00") {
+  if (formatted === "0.00" || formatted === "0") {
     return "se mantuvo";
   }
 
