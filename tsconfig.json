@@ -3,16 +3,17 @@
 		"declaration": true,
 		"module": "commonjs",
 		"esModuleInterop": true,
-		"target": "es6",
+		"target": "ES2021",
 		"lib": ["esnext", "dom"],
 		"noImplicitAny": true,
-		"strict": true,
+		"strict": false,
 		"moduleResolution": "node",
 		"sourceMap": true,
 		"resolveJsonModule": true,
 		"noErrorTruncation": true,
 		"outDir": "public",
 		"declarationDir": "public",
+		"noImplicitUseStrict": true
 	},
 	"exclude": ["node_modules", ".vscode"]
   }
