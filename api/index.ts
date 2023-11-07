@@ -6,7 +6,7 @@ const app = express();
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bot.webhookCallback("/secret-path"));
+app.use(bot.webhookCallback(`/api/${process.env.WEBHOOK_PATH!}`));
 app.get("/api", (req, res) => {
   res.send("Working!!");
 });
