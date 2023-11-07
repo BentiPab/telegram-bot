@@ -1,5 +1,5 @@
-require("./mongo/index");
-require("./telegram/index");
-require("./services/index");
-require("./api/index");
-require("./logger/index");
+import "./mongo/index";
+import "./telegram/index";
+import "./services/index";
+import "./api/index";
+import "./logger/index";

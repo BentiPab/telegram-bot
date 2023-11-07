@@ -1,2 +1,2 @@
-require("./init");
-require("./models/index");
+import "./init";
+import "./models/index";

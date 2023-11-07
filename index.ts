@@ -1,2 +1,5 @@
-require("dotenv").config();
-require("./src/index");
+import dotenv from "dotenv";
+
+dotenv.config();
+
+import "./src/index";

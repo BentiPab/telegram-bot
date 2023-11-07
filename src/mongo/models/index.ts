@@ -1,1 +1,1 @@
-require("./rate");
+import "./rate";
