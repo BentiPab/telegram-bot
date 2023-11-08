@@ -1,5 +1,6 @@
 import { User } from "telegraf/typings/core/types/typegram";
 import { UserModel } from "../mongo/models/user";
+import { Rate } from "../mongo/models/rate";
 import { RatesNameValue } from "../model";
 import { RateController } from "./rateContoller";
 import { nameParser } from "../utils/formater";
@@ -26,7 +27,8 @@ const findUserById = async (userId: number) => {
 
 const findUsersByRate = async (rateName: string) => {
   try {
-    const users = await UserModel.find().populate("subscriptions");
+    const rate = await RateController.getRate(rateName);
+    const users = await UserModel.find({ subscriptions: rate?._id });
     return users.filter((u) =>
       u.subscriptions.filter((s) => s.name === rateName)
     );
