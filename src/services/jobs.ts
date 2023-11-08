@@ -54,17 +54,9 @@ const getRateUpdates = async () => {
 
 const UPDATE_CRON_TIMES = "0 */10 * * * 1-5";
 
-const tenMinJob = cron.schedule(
-  UPDATE_CRON_TIMES,
-  async () => await getRateUpdates(),
-  {
+cron
+  .schedule(UPDATE_CRON_TIMES, async () => await getRateUpdates(), {
     timezone: TIMEZONE,
     name: "Poll Dollar Rates Daily run",
-  }
-);
-
-const init = async () => {
-  tenMinJob.start();
-};
-
-init();
+  })
+  .start();
