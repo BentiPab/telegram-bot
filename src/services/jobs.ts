@@ -16,9 +16,12 @@ const shouldSendRates = async (newRate: IRate) => {
     return true;
   }
   if (!(newRate.fecha === oldRate.fecha)) {
+    saveInfoLog("newRate distinto old rate");
     await RateController.updateRate(newRate.name, newRate);
     return true;
   }
+  saveInfoLog("newRate igual old rate");
+  saveInfoLog(newRate.fecha.concat(" ").concat(oldRate.fecha));
   return false;
 };
 

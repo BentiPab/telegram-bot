@@ -120,7 +120,7 @@ const initializeCommands = () => {
     bot.command(v, (ctx: Context) => getRateCommand(ctx, v))
   );
 
-  bot.command("mySubscriptions", getSubscriptions);
+  bot.command("my_subscriptions", getSubscriptions);
 };
 
 const initializeTexts = () => {
