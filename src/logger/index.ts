@@ -15,9 +15,8 @@ const logger = new Logger({
     ),
   ],
 });
-
-export const saveInfoLog = (message: string) => {
+const saveInfoLog = (message: string) => {
   logger.log("info", message.concat(` at ${getLocalTimeString()}`));
 };
 
-export default logger;
+export const LoggerService = { ...logger, saveInfoLog };

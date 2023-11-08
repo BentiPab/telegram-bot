@@ -17,7 +17,7 @@ import {
 import { UsersController } from "../controller/userController";
 import App from "../app";
 import baseConfig from "../config";
-import { saveInfoLog } from "../logger";
+import { LoggerService } from "../logger";
 
 const bot = new Telegraf(baseConfig.Telegram.BotToken);
 
@@ -63,14 +63,14 @@ const subscriptionCommandHandler = async (ctx: Context) => {
 const subscribeToRate = async (rateName: RatesNameValue, from: User) => {
   await UsersController.handleSubscribeToRate(from, rateName);
   const rateParsed = rateNameParser[rateName as keyof typeof rateNameParser];
-  saveInfoLog(`${from?.first_name} suscribed to ${rateName}`);
+  LoggerService.saveInfoLog(`${from?.first_name} suscribed to ${rateName}`);
   return `Suscripcion a ${rateParsed} exitosa\nRecibira actualizacion en el horario de mercado, y si el valor modifica`;
 };
 
 const unsuscribeFromRate = async (rateName: RatesNameValue, from: User) => {
   await UsersController.handleUnubscribeToRate(from.id, rateName);
   const rateParsed = rateNameParser[rateName as keyof typeof rateNameParser];
-  saveInfoLog(`${from?.first_name} unsuscribed from ${rateName}`);
+  LoggerService.saveInfoLog(`${from?.first_name} unsuscribed from ${rateName}`);
   return `Desuscripcion a ${rateParsed} exitosa`;
 };
 
@@ -96,7 +96,7 @@ const getRateCommand = async (ctx: Context, name: RatesNameValue) => {
   }
   const rateFormatted = formatRateToMessage(rate);
   ctx.reply(rateFormatted);
-  saveInfoLog(`${ctx.from?.first_name} requested ${name} rate`);
+  LoggerService.saveInfoLog(`${ctx.from?.first_name} requested ${name} rate`);
 };
 
 const getSubscriptions = async (ctx: Context) => {

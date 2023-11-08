@@ -1,4 +1,2 @@
-require("./dolar");
-require("./euro");
+export * as RateService from "./rate";
 require("./jobs");
-require("./rate");

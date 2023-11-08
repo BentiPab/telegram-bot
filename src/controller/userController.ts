@@ -4,6 +4,7 @@ import { Rate } from "../mongo/models/rate";
 import { RatesNameValue } from "../model";
 import { RateController } from "./rateContoller";
 import { rateNameParser } from "../utils/formater";
+import { RateService } from "../services";
 
 const createUser = async (user: User) => {
   try {
@@ -38,10 +39,7 @@ const findUsersByRate = async (rateName: string) => {
 };
 
 const handleSubscribeToRate = async (user: User, rateName: RatesNameValue) => {
-  const rate = await RateController.getRate(rateName);
-  if (!rate) {
-    throw new Error("Hubo un error interno, pruebe mas tarde");
-  }
+  const rate = await RateService.getRate(rateName);
 
   try {
     let userDb = await findUserById(user.id);

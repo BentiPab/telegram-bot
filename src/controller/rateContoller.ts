@@ -15,19 +15,17 @@ const updateRate = async (name: string, updatedRate: IRate) => {
 };
 
 const getRate = async (name: string) => {
-  try {
-    const rate = await Rate.findOne({ name }).lean();
-    return rate;
-  } catch (e) {
-    throw new Error("Rate not found");
+  const rate = await Rate.findOne({ name }).lean();
+
+  if (!rate) {
+    return;
   }
+  return rate;
 };
 
 const createRate = async (newRate: IRate) => {
-  try {
-    const rate = await Rate.create(newRate);
-    return rate;
-  } catch (e) {}
+  const rate = await Rate.create(newRate);
+  return rate;
 };
 
 export const RateController = {

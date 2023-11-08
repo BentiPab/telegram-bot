@@ -35,11 +35,7 @@ export const rateNameParser: NamesParsedType = {
 } as const;
 
 export const getInlineKeyboardOptions = Object.keys(rateNameParser).map((k) => [
-  Markup.button.callback(
-    rateNameParser[k as keyof typeof rateNameParser],
-    k,
-    true
-  ),
+  Markup.button.callback(rateNameParser[k as keyof typeof rateNameParser], k),
 ]);
 export const getNamesParsedArray = Object.values(rateNameParser).map((v) => v);
 
@@ -92,9 +88,12 @@ export const GREETING_MESSAGE = `Hola! Los comandos disponibles son los siguient
 
 export const getGreetingMessage = (userName: string) => {
   return `Hola ${userName}! Los comandos disponibles son los siguientes:
-  ${ratesNames.map(
-    (rn) => `/${rn} para recibir el valor del ${rateNameParser[rn]}\n`
-  )}
+  ${ratesNames
+    .map(
+      (rn, index) =>
+        `${index === 0 ? "\n" : ""}/${rn} para recibir el valor del ${rateNameParser[rn]}`
+    )
+    .join()}
   /subscribe para recibir actualizacion de la moneda que desee
   /unsubscribe para dejar de recibir actualizaciones de la moneda que desee
   /my_subscriptions para ver la lista de suscripciones actuales

@@ -1,12 +1,12 @@
 import { RateController } from "../controller/rateContoller";
-import { RatesNamesMap } from "../model";
+import { RatesNameValue, RatesNamesMap, ratesNames } from "../model";
 import { IRate } from "../mongo/models/rate";
 import { sendRateUpdates } from "../telegram";
 import { formatRateToMessage } from "../utils/formater";
 import cron from "node-cron";
 import { fetchRate } from "./rate";
 import { UsersController } from "../controller/userController";
-import logger, { saveInfoLog } from "../logger";
+import { LoggerService } from "../logger";
 import { TIMEZONE } from "../utils/time";
 
 const shouldSendRates = async (newRate: IRate) => {
@@ -16,12 +16,9 @@ const shouldSendRates = async (newRate: IRate) => {
     return true;
   }
   if (!(newRate.fecha === oldRate.fecha)) {
-    saveInfoLog("newRate distinto old rate");
     await RateController.updateRate(newRate.name, newRate);
     return true;
   }
-  saveInfoLog("newRate igual old rate");
-  saveInfoLog(newRate.fecha.concat(" ").concat(oldRate.fecha));
   return false;
 };
 
@@ -32,32 +29,29 @@ const sendAllMessages = async (rate: IRate) => {
   }
   const subsIds = subs.map((s) => s.id);
   const messageToSend = formatRateToMessage(rate);
-  const promises = subsIds.map(
-    async (sid) => await sendRateUpdates(sid, messageToSend)
-  );
 
-  await Promise.allSettled(promises);
+  for (const key in subsIds) {
+    await sendRateUpdates(subsIds[key], messageToSend);
+  }
 };
 
 const getRateUpdates = async () => {
   try {
-    const promises = Object.values(RatesNamesMap).map(async (v) => {
-      const rate = await fetchRate(v);
+    for (const key in ratesNames) {
+      const rate = await fetchRate(ratesNames[key]);
       const shouldSendMessages = await shouldSendRates(rate);
       if (shouldSendMessages) {
-        saveInfoLog(`should send rates`);
+        LoggerService.saveInfoLog(`Update message sent ${ratesNames[key]}`);
         await sendAllMessages(rate);
       }
-      saveInfoLog(`should not send rates`);
-    });
-    await Promise.allSettled(promises);
-    saveInfoLog(`10min Job`);
+    }
+    LoggerService.saveInfoLog(`10min Job`);
   } catch (e) {
-    logger.log("error", (e as Error).message);
+    LoggerService.log("error", (e as Error).message);
   }
 };
 
-const UPDATE_CRON_TIMES = "0 */10 * * * 1-5";
+const UPDATE_CRON_TIMES = "0 */1 * * * 1-5";
 
 cron
   .schedule(UPDATE_CRON_TIMES, async () => await getRateUpdates(), {

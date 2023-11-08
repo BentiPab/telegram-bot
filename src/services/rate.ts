@@ -1,27 +1,21 @@
 import { RateController } from "../controller/rateContoller";
 import { RatesNameValue } from "../model";
 import { IRate } from "../mongo/models/rate";
-import {
-  fetchDollarCripto,
-  fetchDollarMepRate,
-  fetchDollarOficialRate,
-  fetchDollarRate,
-  fetchDollarTurista,
-} from "./dolar";
-import { fetchEuroOficialRate, fetchEuroRate } from "./euro";
+import * as DollarService from "./dolar";
+import * as EuroService from "./euro";
 
 type RateFetcherMap = {
   [k in RatesNameValue]: () => Promise<IRate>;
 };
 
 const fetchersMap: RateFetcherMap = {
-  dolar: fetchDollarRate,
-  euro: fetchEuroRate,
-  dolar_oficial: fetchDollarOficialRate,
-  euro_oficial: fetchEuroOficialRate,
-  dolar_mep: fetchDollarMepRate,
-  dolar_cripto: fetchDollarCripto,
-  dolar_turista: fetchDollarTurista,
+  dolar: DollarService.fetchDollarRate,
+  euro: EuroService.fetchEuroRate,
+  dolar_oficial: DollarService.fetchDollarOficialRate,
+  euro_oficial: EuroService.fetchEuroOficialRate,
+  dolar_mep: DollarService.fetchDollarMepRate,
+  dolar_cripto: DollarService.fetchDollarCripto,
+  dolar_turista: DollarService.fetchDollarTurista,
 };
 
 export const fetchRate = async (name: RatesNameValue) => {
@@ -29,10 +23,11 @@ export const fetchRate = async (name: RatesNameValue) => {
 };
 
 export const getRate = async (name: RatesNameValue) => {
-  try {
-    return await RateController.getRate(name);
-  } catch (e) {
-    const newRate = await fetchRate(name);
-    return await RateController.createRate(newRate);
+  const rate = await RateController.getRate(name);
+
+  if (rate) {
+    return rate;
   }
+  const newRate = await fetchRate(name);
+  return await RateController.createRate(newRate);
 };
