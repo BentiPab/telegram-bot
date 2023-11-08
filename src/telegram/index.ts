@@ -29,9 +29,13 @@ const subscribeCallback = async (
     type === "subscribe"
       ? "A cual desea suscribirse?"
       : "De cual desea desuscribirse";
+
+  const markup = Markup.inlineKeyboard(getInlineKeyboardOptions(), {
+    columns: 2,
+  });
   await ctx.reply(message, {
     parse_mode: "HTML",
-    ...Markup.inlineKeyboard(getInlineKeyboardOptions()),
+    ...markup,
   });
 };
 

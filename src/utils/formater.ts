@@ -34,20 +34,9 @@ export const rateNameParser: NamesParsedType = {
   dolar_turista: "Dolar Turista",
 } as const;
 
-export const getInlineKeyboardOptions = () => {
-  const indexes = ratesNames.length - 1;
-  const middleIndex = Math.floor(indexes / 2);
-  const firstHalf = ratesNames.slice(0, middleIndex);
-  const lastHalf = ratesNames.slice(middleIndex);
-  const firstHalfButtons = firstHalf.map((k) =>
-    Markup.button.callback(rateNameParser[k], k)
-  );
-  const lastHalfButtons = lastHalf.map((k) =>
-    Markup.button.callback(rateNameParser[k], k)
-  );
+export const getInlineKeyboardOptions = () =>
+  ratesNames.map((rn) => Markup.button.callback(rateNameParser[rn], rn));
 
-  return [lastHalfButtons, firstHalfButtons];
-};
 export const getNamesParsedArray = Object.values(rateNameParser).map((v) => v);
 
 export const formatRateToMessage = (data: IRate) => {
