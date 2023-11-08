@@ -51,11 +51,4 @@ const getRateUpdates = async () => {
   }
 };
 
-const UPDATE_CRON_TIMES = "0 */1 * * * 1-5";
-
-cron
-  .schedule(UPDATE_CRON_TIMES, async () => await getRateUpdates(), {
-    timezone: TIMEZONE,
-    name: "Poll Dollar Rates Daily run",
-  })
-  .start();
+getRateUpdates();
