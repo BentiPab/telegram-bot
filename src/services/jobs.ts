@@ -29,22 +29,19 @@ const sendAllMessages = async (rate: IRate) => {
   }
   const subsIds = subs.map((s) => s.id);
   const messageToSend = formatRateToMessage(rate);
-
-  for (const key in subsIds) {
-    await sendRateUpdates(subsIds[key], messageToSend);
-  }
+  return subsIds.map(async (id) => await sendRateUpdates(id, messageToSend));
 };
 
 const getRateUpdates = async () => {
   try {
-    for (const key in ratesNames) {
-      const rate = await fetchRate(ratesNames[key]);
+    ratesNames.map(async (rn) => {
+      const rate = await fetchRate(rn);
       const shouldSendMessages = await shouldSendRates(rate);
       if (shouldSendMessages) {
-        LoggerService.saveInfoLog(`Update message sent ${ratesNames[key]}`);
-        await sendAllMessages(rate);
+        LoggerService.saveInfoLog(`Update message sent ${rn}`);
+        return await sendAllMessages(rate);
       }
-    }
+    });
     LoggerService.saveInfoLog(`10min Job`);
   } catch (e) {
     LoggerService.log("error", (e as Error).message);
