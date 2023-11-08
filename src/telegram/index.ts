@@ -87,7 +87,7 @@ const greetCallback = async (ctx: Context) => {
   ctx.reply(getGreetingMessage(user.first_name));
 };
 
-const getRateCommand = async (ctx: Context, name: string) => {
+const getRateCommand = async (ctx: Context, name: RatesNameValue) => {
   const rate = await getRate(name);
 
   if (!rate) {

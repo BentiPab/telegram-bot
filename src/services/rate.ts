@@ -1,10 +1,15 @@
 import { RateController } from "../controller/rateContoller";
+import { RatesNameValue } from "../model";
 import { IRate } from "../mongo/models/rate";
-import { fetchDollarOficialRate, fetchDollarRate } from "./dolar";
+import {
+  fetchDollarMepRate,
+  fetchDollarOficialRate,
+  fetchDollarRate,
+} from "./dolar";
 import { fetchEuroOficialRate, fetchEuroRate } from "./euro";
 
 type RateFetcherMap = {
-  [k: string]: () => Promise<IRate>;
+  [k in RatesNameValue]: () => Promise<IRate>;
 };
 
 const fetchersMap: RateFetcherMap = {
@@ -12,13 +17,14 @@ const fetchersMap: RateFetcherMap = {
   euro: fetchEuroRate,
   dolar_oficial: fetchDollarOficialRate,
   euro_oficial: fetchEuroOficialRate,
+  dolar_mep: fetchDollarMepRate,
 };
 
-export const fetchRate = async (name: string) => {
+export const fetchRate = async (name: RatesNameValue) => {
   return await fetchersMap[name]();
 };
 
-export const getRate = async (name: string) => {
+export const getRate = async (name: RatesNameValue) => {
   try {
     return await RateController.getRate(name);
   } catch (e) {
