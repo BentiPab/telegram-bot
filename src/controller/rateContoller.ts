@@ -1,4 +1,3 @@
-import logger from "../logger";
 import { IRate, Rate } from "../mongo/models/rate";
 
 const updateRate = async (name: string, updatedRate: IRate) => {
@@ -8,7 +7,6 @@ const updateRate = async (name: string, updatedRate: IRate) => {
       $set: updatedRate,
     }
   );
-  logger.log("info", `${name} updated`);
   if (!rate) {
     return "rate not found";
   }
