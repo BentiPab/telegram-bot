@@ -6,7 +6,8 @@ import { formatRateToMessage } from "../utils/formater";
 import cron from "node-cron";
 import { fetchRate } from "./rate";
 import { UsersController } from "../controller/userController";
-import logger from "../logger";
+import logger, { saveInfoLog } from "../logger";
+import { TIMEZONE, getLocalTimeString } from "../utils/time";
 
 const shouldSendRates = async (newRate: IRate, skipCheck: boolean) => {
   const oldRate = await RateController.getRate(newRate.name);
@@ -14,10 +15,6 @@ const shouldSendRates = async (newRate: IRate, skipCheck: boolean) => {
     await RateController.createRate(newRate);
     return true;
   }
-  logger.log(
-    "info",
-    `Should send rates ${!newRate.fecha.match(oldRate.fecha) || skipCheck}`
-  );
   if (!newRate.fecha.match(oldRate.fecha) || skipCheck) {
     await RateController.updateRate(newRate.name, newRate);
     return true;
@@ -49,20 +46,20 @@ const getRateUpdates = async (skipCheck = false) => {
       }
     });
     await Promise.allSettled(promises);
-    logger.log("info", `${skipCheck ? "daily" : "10min"} Job ran`);
+    saveInfoLog(`${skipCheck ? "daily" : "10min"} Job`);
   } catch (e) {
     logger.log("error", (e as Error).message);
   }
 };
 
-const UPDATE_CRON_TIMES = "10/10 11-19 * * 1-5";
+const UPDATE_CRON_TIMES = "0 */10 11-17 * * 1-5";
 const START_CRON_TIMES = "0 11 * * 1-5";
 
 const tenMinJob = cron.schedule(
   UPDATE_CRON_TIMES,
   async () => await getRateUpdates(),
   {
-    timezone: "America/Buenos_Aires",
+    timezone: TIMEZONE,
     name: "Poll Dollar Rates Daily run",
   }
 );
@@ -71,7 +68,7 @@ const daily = cron.schedule(
   START_CRON_TIMES,
   async () => await getRateUpdates(true),
   {
-    timezone: "America/Buenos_Aires",
+    timezone: TIMEZONE,
     name: "Poll Dollar Rates Start day",
   }
 );

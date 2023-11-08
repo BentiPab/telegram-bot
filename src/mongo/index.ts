@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import logger from "../logger";
+import logger, { saveInfoLog } from "../logger";
 import config from "../config/base.config";
 
 class MongoConnector {
@@ -13,11 +13,11 @@ class MongoConnector {
     const connectionURI = config.Mongo.Url;
 
     try {
-      logger.log("info", "Connecting to mongo...");
+      saveInfoLog("Connecting to mongo...");
       await mongoose.connect(connectionURI!, {
         dbName: config.Mongo.DbName,
       });
-      logger.log("info", "Connected to mongo");
+      saveInfoLog("Connected to mongo");
     } catch (error: any) {
       logger.log("error", (error as Error).message);
     }

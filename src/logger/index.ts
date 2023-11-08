@@ -1,4 +1,5 @@
 import { Logger, transports } from "winston";
+import { getLocalTimeString } from "../utils/time";
 
 const LOG_LEVELS = ["error", "info"];
 
@@ -14,5 +15,9 @@ const logger = new Logger({
     ),
   ],
 });
+
+export const saveInfoLog = (message: string) => {
+  logger.log("info", message.concat(`at ${getLocalTimeString()}`));
+};
 
 export default logger;
