@@ -4,7 +4,7 @@ import {
   formatSubsMessage,
   getGreetingMessage,
   getInlineKeyboardOptions,
-  nameParser,
+  rateNameParser,
 } from "../utils/formater";
 import { message, callbackQuery } from "telegraf/filters";
 import { getRate } from "../services/rate";
@@ -62,14 +62,14 @@ const subscriptionCommandHandler = async (ctx: Context) => {
 
 const subscribeToRate = async (rateName: RatesNameValue, from: User) => {
   await UsersController.handleSubscribeToRate(from, rateName);
-  const rateParsed = nameParser[rateName as keyof typeof nameParser];
+  const rateParsed = rateNameParser[rateName as keyof typeof rateNameParser];
   saveInfoLog(`${from?.first_name} suscribed to ${rateName}`);
   return `Suscripcion a ${rateParsed} exitosa\nRecibira actualizacion en el horario de mercado, y si el valor modifica`;
 };
 
 const unsuscribeFromRate = async (rateName: RatesNameValue, from: User) => {
   await UsersController.handleUnubscribeToRate(from.id, rateName);
-  const rateParsed = nameParser[rateName as keyof typeof nameParser];
+  const rateParsed = rateNameParser[rateName as keyof typeof rateNameParser];
   saveInfoLog(`${from?.first_name} unsuscribed from ${rateName}`);
   return `Desuscripcion a ${rateParsed} exitosa`;
 };

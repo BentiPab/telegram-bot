@@ -3,7 +3,7 @@ import { UserModel } from "../mongo/models/user";
 import { Rate } from "../mongo/models/rate";
 import { RatesNameValue } from "../model";
 import { RateController } from "./rateContoller";
-import { nameParser } from "../utils/formater";
+import { rateNameParser } from "../utils/formater";
 
 const createUser = async (user: User) => {
   try {
@@ -53,7 +53,7 @@ const handleSubscribeToRate = async (user: User, rateName: RatesNameValue) => {
     const subscriptions = userDb?.subscriptions;
     const alreadySub = subscriptions?.some((s) => s.name === rateName);
     if (alreadySub) {
-      throw new Error(`Usuario ya suscrito a ${nameParser[rateName]}`);
+      throw new Error(`Usuario ya suscrito a ${rateNameParser[rateName]}`);
     }
 
     return await userDb?.updateOne({ $push: { subscriptions: rate._id } });
@@ -80,7 +80,7 @@ const handleUnubscribeToRate = async (
   const alreadySub = subscriptions.some((s) => s.name === rateName);
 
   if (!alreadySub) {
-    throw new Error(`Usuario no suscrito a ${nameParser[rateName]}`);
+    throw new Error(`Usuario no suscrito a ${rateNameParser[rateName]}`);
   }
 
   const newSubs = subscriptions.filter((s) => s.name !== rateName);

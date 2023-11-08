@@ -1,4 +1,9 @@
-import { RateType, RatesNameValue, RatesNamesParsed } from "../model";
+import {
+  NamesParsedType,
+  RateType,
+  RatesNameValue,
+  RatesNamesParsed,
+} from "../model";
 import { IRate } from "../mongo/models/rate";
 import { Markup } from "telegraf";
 
@@ -18,23 +23,29 @@ export const parseVariationToMovementMessage = (variation: string) => {
   return "aumento 📈";
 };
 
-export const nameParser: { [k in RatesNameValue]: RatesNamesParsed } = {
+export const rateNameParser: NamesParsedType = {
   euro_oficial: "Euro Oficial",
   dolar_oficial: "Dolar Oficial",
   dolar: "Dolar Blue",
   euro: "Euro Blue",
   dolar_mep: "Dolar Mep",
-};
+  dolar_cripto: "Dolar Cripto",
+  dolar_turista: "Dolar Cripto",
+} as const;
 
-export const getInlineKeyboardOptions = Object.keys(nameParser).map((k) => [
-  Markup.button.callback(nameParser[k as keyof typeof nameParser], k, true),
+export const getInlineKeyboardOptions = Object.keys(rateNameParser).map((k) => [
+  Markup.button.callback(
+    rateNameParser[k as keyof typeof rateNameParser],
+    k,
+    true
+  ),
 ]);
-export const getNamesParsedArray = Object.values(nameParser).map((v) => v);
+export const getNamesParsedArray = Object.values(rateNameParser).map((v) => v);
 
 export const formatRateToMessage = (data: IRate) => {
   const { compra, venta, fecha, valorCierreAnt, variacion, name } = data;
   const movimiento = parseVariationToMovementMessage(variacion);
-  const parsedName = nameParser[name as RatesNameValue];
+  const parsedName = rateNameParser[name as RatesNameValue];
   const avg = calculateAvg(compra, venta);
 
   return `El ${parsedName} ${movimiento}
@@ -51,7 +62,9 @@ export const formatSubsMessage = (data: IRate[]) => {
     const mappedRates = data
       .map(
         (r) =>
-          `${BULLET_POINT}${nameParser[r.name as keyof typeof nameParser]}\n`
+          `${BULLET_POINT}${
+            rateNameParser[r.name as keyof typeof rateNameParser]
+          }\n`
       )
       .join(" ");
 

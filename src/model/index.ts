@@ -10,20 +10,28 @@ export type RatesNamesParsed =
   | "Dolar Oficial"
   | "Dolar Blue"
   | "Euro Blue"
-  | "Dolar Mep";
+  | "Dolar Mep"
+  | "Dolar Turista"
+  | "Dolar Cripto";
 
 export type RatesNameKey =
   | "DOLAR"
   | "EURO"
   | "EURO_OFICIAL"
   | "DOLAR_OFICIAL"
-  | "DOLAR_MEP";
+  | "DOLAR_MEP"
+  | "DOLAR_TURISTA"
+  | "DOLAR_CRIPTO";
 export type RatesNameValue =
   | "dolar"
   | "euro_oficial"
   | "euro"
   | "dolar_oficial"
-  | "dolar_mep";
+  | "dolar_mep"
+  | "dolar_turista"
+  | "dolar_cripto";
+
+export type NamesParsedType = { [k in RatesNameValue]: RatesNamesParsed };
 
 export type RatesNameMapType = { [k in RatesNameKey]: RatesNameValue };
 export const RatesNamesMap: RatesNameMapType = {
@@ -32,4 +40,6 @@ export const RatesNamesMap: RatesNameMapType = {
   EURO: "euro",
   DOLAR_OFICIAL: "dolar_oficial",
   DOLAR_MEP: "dolar_mep",
-};
+  DOLAR_CRIPTO: "dolar_cripto",
+  DOLAR_TURISTA: "dolar_turista",
+} as const;
