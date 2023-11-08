@@ -3,6 +3,7 @@ import {
   RateType,
   RatesNameValue,
   RatesNamesParsed,
+  ratesNames,
 } from "../model";
 import { IRate } from "../mongo/models/rate";
 import { Markup } from "telegraf";
@@ -91,11 +92,9 @@ export const GREETING_MESSAGE = `Hola! Los comandos disponibles son los siguient
 
 export const getGreetingMessage = (userName: string) => {
   return `Hola ${userName}! Los comandos disponibles son los siguientes:
-  /dolar para recibir valor del dolar blue
-  /dolar_mep para recibir valor del dolar mep
-  /dolar_oficial para recibir valor del dolar oficial
-  /euro para recibir valor del euro blue
-  /euro_oficial para recibir valor del euro oficial
+  ${ratesNames.map(
+    (rn) => `/${rn} para recibir el valor del ${rateNameParser[rn]}\n`
+  )}
   /subscribe para recibir actualizacion de la moneda que desee
   /unsubscribe para dejar de recibir actualizaciones de la moneda que desee
   /my_subscriptions para ver la lista de suscripciones actuales

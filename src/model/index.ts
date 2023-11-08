@@ -33,6 +33,16 @@ export type RatesNameValue =
 
 export type NamesParsedType = { [k in RatesNameValue]: RatesNamesParsed };
 
+export const ratesNames: RatesNameValue[] = [
+  "dolar",
+  "dolar_cripto",
+  "dolar_mep",
+  "dolar_oficial",
+  "dolar_turista",
+  "euro",
+  "euro_oficial",
+];
+
 export type RatesNameMapType = { [k in RatesNameKey]: RatesNameValue };
 export const RatesNamesMap: RatesNameMapType = {
   DOLAR: "dolar",

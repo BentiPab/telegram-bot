@@ -8,7 +8,7 @@ import {
 } from "../utils/formater";
 import { message, callbackQuery } from "telegraf/filters";
 import { getRate } from "../services/rate";
-import { RatesNameValue, RatesNamesMap } from "../model";
+import { RatesNameValue, ratesNames } from "../model";
 import {
   CallbackQuery,
   Message,
@@ -17,7 +17,7 @@ import {
 import { UsersController } from "../controller/userController";
 import App from "../app";
 import baseConfig from "../config";
-import logger, { saveInfoLog } from "../logger";
+import { saveInfoLog } from "../logger";
 
 const bot = new Telegraf(baseConfig.Telegram.BotToken);
 
@@ -116,7 +116,7 @@ const initializeCommands = () => {
     subscribeCallback(ctx, "desuscribe")
   );
 
-  Object.values(RatesNamesMap).forEach((v) =>
+  ratesNames.forEach((v) =>
     bot.command(v, (ctx: Context) => getRateCommand(ctx, v))
   );
 
