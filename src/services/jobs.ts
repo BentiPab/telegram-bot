@@ -45,8 +45,10 @@ const getRateUpdates = async () => {
       const rate = await fetchRate(v);
       const shouldSendMessages = await shouldSendRates(rate);
       if (shouldSendMessages) {
+        saveInfoLog(`should send rates`);
         await sendAllMessages(rate);
       }
+      saveInfoLog(`should not send rates`);
     });
     await Promise.allSettled(promises);
     saveInfoLog(`10min Job`);
