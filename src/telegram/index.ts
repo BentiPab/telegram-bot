@@ -136,16 +136,24 @@ export const sendRateUpdates = async (chatId: number, message: string) => {
   await bot.telegram.sendMessage(chatId, message);
 };
 
-const initBot = () => {
+const setWebhook = async () => {
+  const webhook = await bot.telegram.getWebhookInfo();
+  if (
+    baseConfig.App.Env === "production" &&
+    webhook.url !== baseConfig.App.WebhookUrl
+  ) {
+    bot.telegram.setWebhook(baseConfig.App.WebhookUrl);
+  }
+};
+
+const initBot = async () => {
   App.getInstance()
     .getServer()
     ?.use(bot.webhookCallback(baseConfig.App.WebhookPath));
   initializeCommands();
   initializeTexts();
+  setWebhook();
 
-  if (baseConfig.App.Env === "production") {
-    bot.telegram.setWebhook(baseConfig.App.WebhookUrl);
-  }
   bot.launch();
 };
 
