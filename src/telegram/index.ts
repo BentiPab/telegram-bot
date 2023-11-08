@@ -31,7 +31,7 @@ const subscribeCallback = async (
       : "De cual desea desuscribirse";
   await ctx.reply(message, {
     parse_mode: "HTML",
-    ...Markup.inlineKeyboard(getInlineKeyboardOptions),
+    ...Markup.inlineKeyboard(getInlineKeyboardOptions()),
   });
 };
 

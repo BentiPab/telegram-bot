@@ -31,12 +31,23 @@ export const rateNameParser: NamesParsedType = {
   euro: "Euro Blue",
   dolar_mep: "Dolar Mep",
   dolar_cripto: "Dolar Cripto",
-  dolar_turista: "Dolar Cripto",
+  dolar_turista: "Dolar Turista",
 } as const;
 
-export const getInlineKeyboardOptions = Object.keys(rateNameParser).map((k) => [
-  Markup.button.callback(rateNameParser[k as keyof typeof rateNameParser], k),
-]);
+export const getInlineKeyboardOptions = () => {
+  const indexes = ratesNames.length - 1;
+  const middleIndex = Math.floor(indexes / 2);
+  const firstHalf = ratesNames.slice(0, middleIndex);
+  const lastHalf = ratesNames.slice(middleIndex);
+  const firstHalfButtons = firstHalf.map((k) =>
+    Markup.button.callback(rateNameParser[k], k)
+  );
+  const lastHalfButtons = lastHalf.map((k) =>
+    Markup.button.callback(rateNameParser[k], k)
+  );
+
+  return [lastHalfButtons, firstHalfButtons];
+};
 export const getNamesParsedArray = Object.values(rateNameParser).map((v) => v);
 
 export const formatRateToMessage = (data: IRate) => {
@@ -91,7 +102,9 @@ export const getGreetingMessage = (userName: string) => {
   ${ratesNames
     .map(
       (rn, index) =>
-        `${index === 0 ? "\n" : ""}/${rn} para recibir el valor del ${rateNameParser[rn]}`
+        `${index === 0 ? "\n" : ""}/${rn} para recibir el valor del ${
+          rateNameParser[rn]
+        }`
     )
     .join()}
   /subscribe para recibir actualizacion de la moneda que desee

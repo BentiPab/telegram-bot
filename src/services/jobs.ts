@@ -51,4 +51,8 @@ const getRateUpdates = async () => {
   }
 };
 
-getRateUpdates();
+const init = async () => {
+  await getRateUpdates();
+};
+
+init();
