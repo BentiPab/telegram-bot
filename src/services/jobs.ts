@@ -14,7 +14,10 @@ const shouldSendRates = async (newRate: IRate, skipCheck: boolean) => {
     await RateController.createRate(newRate);
     return true;
   }
-
+  logger.log(
+    "info",
+    `Should send rates ${!newRate.fecha.match(oldRate.fecha) || skipCheck}`
+  );
   if (!newRate.fecha.match(oldRate.fecha) || skipCheck) {
     await RateController.updateRate(newRate.name, newRate);
     return true;
@@ -29,8 +32,8 @@ const sendAllMessages = async (rate: IRate) => {
   }
   const subsIds = subs.map((s) => s.id);
   const messageToSend = formatRateToMessage(rate);
-  const promises = subsIds.map(async (sid) =>
-    sendRateUpdates(sid, messageToSend)
+  const promises = subsIds.map(
+    async (sid) => await sendRateUpdates(sid, messageToSend)
   );
 
   await Promise.allSettled(promises);

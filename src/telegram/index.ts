@@ -128,8 +128,8 @@ const initializeTexts = () => {
   bot.on(callbackQuery("data"), subscriptionCommandHandler);
 };
 
-export const sendRateUpdates = (chatId: number, message: string) => {
-  bot.telegram.sendMessage(chatId, message);
+export const sendRateUpdates = async (chatId: number, message: string) => {
+  await bot.telegram.sendMessage(chatId, message);
 };
 
 const initBot = () => {
