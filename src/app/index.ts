@@ -3,6 +3,7 @@ import bodyParser from "body-parser";
 import MongoConnector from "../mongo";
 import config from "../config/base.config";
 import TelegramRoutes from "./telegramRoutes";
+import TelegramBot from "../telegram/telegramBot";
 
 class App {
   private static instance: App;
@@ -28,6 +29,7 @@ class App {
     }
     this.server.listen(port, () => {
       MongoConnector.init();
+      TelegramBot.initializeWebhook();
     });
   }
   public setBotWebhook = (webhook: RequestHandler) => {

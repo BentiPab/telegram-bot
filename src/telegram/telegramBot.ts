@@ -38,7 +38,6 @@ class TelegramBot extends Telegraf {
   static startBot = () => {
     this.initializeCommands();
     this.initializeTexts();
-    this.initializeWebhook();
     this.instance.launch();
   };
 
