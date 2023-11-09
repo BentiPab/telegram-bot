@@ -47,7 +47,7 @@ export const formatRateToMessage = (data: IRate) => {
 
   return `El ${parsedName} ${movimiento}
 Variacion con ultimo cierre: ${variacion}
-${valorCierreAnt && `Valor venta cierre anterior: ${valorCierreAnt}`}
+${!!valorCierreAnt && `Valor venta cierre anterior: ${valorCierreAnt}`}
 Compra: ${compra}
 Venta: ${venta}
 Promedio: ${avg}
@@ -87,17 +87,19 @@ export const GREETING_MESSAGE = `Hola! Los comandos disponibles son los siguient
   /unsubscribe: para dejar de recibir actualizaciones`;
 
 export const getGreetingMessage = (userName: string) => {
+  const ratesMessage = ratesNames.map(
+    (rn) => `/${rn} para recibir el valor del ${rateNameParser[rn]}`
+  );
   return `Hola ${userName}! Los comandos disponibles son los siguientes:
-  ${ratesNames
-    .map(
-      (rn, index) =>
-        `${index === 0 ? "\n" : ""}/${rn} para recibir el valor del ${
-          rateNameParser[rn]
-        }`
-    )
-    .join()}
-  /subscribe para recibir actualizacion de la moneda que desee
-  /unsubscribe para dejar de recibir actualizaciones de la moneda que desee
-  /my_subscriptions para ver la lista de suscripciones actuales
-  /start para recibir nuevamente este mensaje`;
+/dolar para recibir el valor del Dolar Blue
+/dolar_cripto para recibir el valor del Dolar Cripto
+/dolar_mep para recibir el valor del Dolar MEP
+/dolar_turista para recibir el valor del Dolar Turista
+/dolar_oficial para recibir el valor del Dolar Oficial
+/euro para recibir el valor del Euro Blue
+/euro_oficial para recibir el valor del Euro Oficial
+/subscribe para recibir actualizacion de la moneda que desee
+/unsubscribe para dejar de recibir actualizaciones de la moneda que desee
+/my_subscriptions para ver la lista de suscripciones actuales
+/start para recibir nuevamente este mensaje`;
 };

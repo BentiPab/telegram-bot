@@ -1,8 +1,8 @@
-import express from "express";
-import bot from "../telegram";
+import express, { RequestHandler } from "express";
 import bodyParser from "body-parser";
 import MongoConnector from "../mongo";
 import config from "../config/base.config";
+import TelegramRoutes from "./telegramRoutes";
 
 class App {
   private static instance: App;
@@ -19,13 +19,7 @@ class App {
     this.server.use(bodyParser.json({ limit: "50mb" }));
     this.server.use(bodyParser.urlencoded({ extended: false, limit: "50mb" }));
 
-    this.server.get("/", (req, res) => {
-      res.send("Working!!");
-    });
-
-    this.server.post(`/${config.App.WebhookPath}`, (req, res) => {
-      bot.handleUpdate(req.body, res);
-    });
+    this.server.use("/", new TelegramRoutes().router);
   };
 
   public start(port: number): void {
@@ -36,6 +30,12 @@ class App {
       MongoConnector.init();
     });
   }
+  public setBotWebhook = (webhook: RequestHandler) => {
+    if (!this.server) {
+      return;
+    }
+    this.server.use(webhook);
+  };
 
   static getInstance = (): App => {
     if (!App.instance) {

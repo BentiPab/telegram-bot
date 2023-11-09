@@ -7,12 +7,13 @@ import { rateNameParser } from "../utils/formater";
 import { RateService } from "../services";
 
 const createUser = async (user: User) => {
-  try {
-    const newUser = await UserModel.create(user);
-    return newUser;
-  } catch (e) {
-    throw e;
+  const exists = await UserModel.findOne({ id: user.id });
+
+  if (exists) {
+    return exists;
   }
+  const newUser = await UserModel.create(user);
+  return newUser;
 };
 
 const findUserById = async (userId: number) => {
@@ -42,11 +43,7 @@ const handleSubscribeToRate = async (user: User, rateName: RatesNameValue) => {
   const rate = await RateService.getRate(rateName);
 
   try {
-    let userDb = await findUserById(user.id);
-
-    if (!userDb) {
-      userDb = await createUser(user);
-    }
+    const userDb = await createUser(user);
 
     const subscriptions = userDb?.subscriptions;
     const alreadySub = subscriptions?.some((s) => s.name === rateName);

@@ -1,8 +1,10 @@
+import axios from "axios";
 import { RateController } from "../controller/rateContoller";
 import { RatesNameValue } from "../model";
 import { IRate } from "../mongo/models/rate";
 import * as DollarService from "./dolar";
 import * as EuroService from "./euro";
+import baseConfig from "../config";
 
 type RateFetcherMap = {
   [k in RatesNameValue]: () => Promise<IRate>;

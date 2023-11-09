@@ -35,13 +35,19 @@ const mongoConfig = {
 const appConfig = {
   AmbitoUrl: safeEnv("AMBITO_URL"),
   Url: safeEnv("URL"),
-  WebhookPath: safeEnv("WEBHOOK_PATH"),
-  WebhookUrl: `${safeEnv("URL")}/${safeEnv("WEBHOOK_PATH")}`,
   Env: safeEnv("NODE_ENV"),
 };
 
 const telegramConfig = {
   BotToken: safeEnv("BOT_TOKEN"),
+  WebhookDolarUpdatesPath: safeEnv("WEBHOOK_DOLAR_UPDATES_PATH"),
+  WebhookDolarUpdatesUrl: `${safeEnv("URL")}/${safeEnv(
+    "WEBHOOK_DOLAR_UPDATES_PATH"
+  )}`,
+  WebhookDolarSendRatesPaths: safeEnv("WEBHOOK_DOLAR_RATES_PATH"),
+  WebhookDolarSendRatesUrl: `${safeEnv("URL")}/${safeEnv(
+    "WEBHOOK_DOLAR_RATES_PATH"
+  )}`,
 };
 
 const config = {
