@@ -47,7 +47,7 @@ export const formatRateToMessage = (data: IRate) => {
 
   return `El ${parsedName} ${movimiento}
 Variacion con ultimo cierre: ${variacion}
-${!!valorCierreAnt && `Valor venta cierre anterior: ${valorCierreAnt}`}
+${!!valorCierreAnt ? `Valor venta cierre anterior: ${valorCierreAnt}` : ""}
 Compra: ${compra}
 Venta: ${venta}
 Promedio: ${avg}
