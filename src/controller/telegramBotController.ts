@@ -7,7 +7,7 @@ import { getRateUpdates } from "../services/jobs";
 import cron from "node-cron";
 import { TIMEZONE } from "../utils/time";
 import { LoggerService } from "../logger";
-import { telegramBot } from "../telegram/telegramBot";
+import TelegramBot from "../telegram/telegramBot";
 
 class TelegramBotController {
   constructor() {
@@ -36,15 +36,18 @@ class TelegramBotController {
       const subsIds = subs.map((s) => s.id);
       const messageToSend = formatRateToMessage(rate);
       subsIds.map(
-        async (id) => await telegramBot.sendMessage(id, messageToSend)
+        async (id) =>
+          await TelegramBot.getInstance().telegram.sendMessage(
+            id,
+            messageToSend
+          )
       );
     });
     LoggerService.saveInfoLog(`Sent update message ${rates.join(", ")}`);
   };
 
   public handleUpdates = async (update: Update) => {
-    console.log("updates");
-    await telegramBot.handleUpdate(update);
+    await TelegramBot.getInstance().handleUpdate(update);
   };
 }
 

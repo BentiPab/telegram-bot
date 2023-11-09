@@ -20,20 +20,31 @@ import { RatesNameValue, ratesNames } from "../model";
 import { RateService } from "../services";
 import { callbackQuery, message } from "telegraf/filters";
 
-class TelegramBot {
-  private instance: Telegraf;
+class TelegramBot extends Telegraf {
+  private static instance: TelegramBot;
 
-  constructor() {
-    this.instance = new Telegraf(baseConfig.Telegram.BotToken);
+  constructor(token: string, options?: Partial<Telegraf.Options<Context>>) {
+    super(token, options);
+  }
+
+  static getInstance = () => {
+    if (!this.instance) {
+      this.instance = new TelegramBot(baseConfig.Telegram.BotToken);
+      this.startBot();
+    }
+    return this.instance;
+  };
+
+  static startBot = () => {
     this.initializeCommands();
     this.initializeTexts();
     this.initializeWebhook();
-  }
+    this.instance.launch();
+  };
 
-  private greetCallback = async (ctx: Context) => {
+  static greetCallback = async (ctx: Context) => {
     const user = (ctx.message as Message.TextMessage).from!;
     await UsersController.createUser(user);
-    console.log("hola");
 
     if (user.username === "iWallas") {
       ctx.reply("Waldo come verga");
@@ -42,14 +53,14 @@ class TelegramBot {
     ctx.reply(getGreetingMessage(user.first_name));
   };
 
-  private subscribeToRate = async (rateName: RatesNameValue, from: User) => {
+  static subscribeToRate = async (rateName: RatesNameValue, from: User) => {
     await UsersController.handleSubscribeToRate(from, rateName);
     const rateParsed = rateNameParser[rateName as keyof typeof rateNameParser];
     LoggerService.saveInfoLog(`${from?.first_name} suscribed to ${rateName}`);
     return `Suscripcion a ${rateParsed} exitosa\nRecibira actualizacion en el horario de mercado, y si el valor modifica`;
   };
 
-  private unsuscribeFromRate = async (rateName: RatesNameValue, from: User) => {
+  static unsuscribeFromRate = async (rateName: RatesNameValue, from: User) => {
     await UsersController.handleUnubscribeToRate(from.id, rateName);
     const rateParsed = rateNameParser[rateName as keyof typeof rateNameParser];
     LoggerService.saveInfoLog(
@@ -58,7 +69,7 @@ class TelegramBot {
     return `Desuscripcion a ${rateParsed} exitosa`;
   };
 
-  private getRateCommand = async (ctx: Context, name: RatesNameValue) => {
+  static getRateCommand = async (ctx: Context, name: RatesNameValue) => {
     const rate = await RateService.getRate(name);
 
     if (!rate) {
@@ -70,7 +81,7 @@ class TelegramBot {
     LoggerService.saveInfoLog(`${ctx.from?.first_name} requested ${name} rate`);
   };
 
-  private getSubscriptions = async (ctx: Context) => {
+  static getSubscriptions = async (ctx: Context) => {
     const userId = ctx.from?.id;
     const subs = await UsersController.getSubscriptions(userId!);
     const subsmessage = formatSubsMessage(subs);
@@ -78,15 +89,7 @@ class TelegramBot {
     ctx.replyWithMarkdownV2(subsmessage, { parse_mode: "HTML" });
   };
 
-  public sendMessage = async (id: number, message: string) => {
-    await this.instance.telegram.sendMessage(id, message);
-  };
-
-  public handleUpdate = async (update: Update) => {
-    await this.instance.handleUpdate(update);
-  };
-
-  private subscribeCallback = async (
+  static subscribeCallback = async (
     ctx: Context,
     type: "subscribe" | "desuscribe"
   ) => {
@@ -104,7 +107,7 @@ class TelegramBot {
     });
   };
 
-  private subscriptionCommandHandler = async (ctx: Context) => {
+  static subscriptionCommandHandler = async (ctx: Context) => {
     const callbackQuery = ctx.callbackQuery as CallbackQuery.DataQuery;
     const subRate = callbackQuery.data;
     const from = callbackQuery.from;
@@ -132,7 +135,7 @@ class TelegramBot {
     }
   };
 
-  private initializeCommands = () => {
+  static initializeCommands = () => {
     this.instance.command("start", this.greetCallback);
     this.instance.command("subscribe", (ctx: Context) =>
       this.subscribeCallback(ctx, "subscribe")
@@ -148,12 +151,12 @@ class TelegramBot {
     this.instance.command("my_subscriptions", this.getSubscriptions);
   };
 
-  private initializeTexts = () => {
+  static initializeTexts = () => {
     this.instance.on(message("text"), this.greetCallback);
     this.instance.on(callbackQuery("data"), this.subscriptionCommandHandler);
   };
 
-  private initializeWebhook = async () => {
+  static initializeWebhook = async () => {
     if (baseConfig.App.Env === "production") {
       this.instance.telegram.setWebhook(
         baseConfig.Telegram.WebhookDolarUpdatesUrl
@@ -165,5 +168,6 @@ class TelegramBot {
     }
   };
 }
+TelegramBot.getInstance();
 
-export const telegramBot = new TelegramBot();
+export default TelegramBot;
