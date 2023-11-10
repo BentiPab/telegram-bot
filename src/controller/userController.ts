@@ -8,7 +8,7 @@ import i18next from "i18next";
 
 const createUser = async (user: User) => {
   const exists = await UserModel.findOne({ id: user.id });
-  console.log(user);
+
   if (exists) {
     return exists;
   }
