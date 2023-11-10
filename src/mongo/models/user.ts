@@ -10,8 +10,8 @@ const userSchema = new Schema<IUser>(
   {
     id: { type: Number, required: true, unique: true },
     first_name: { type: String, required: true, unique: true },
-    last_name: { type: String, required: true },
-    username: { type: String, required: true },
+    last_name: { type: String, required: false },
+    username: { type: String, required: false },
     subscriptions: {
       type: [mongoose.Types.ObjectId],
       ref: "Rate",
