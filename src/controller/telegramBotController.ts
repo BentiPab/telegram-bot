@@ -16,7 +16,7 @@ class TelegramBotController {
 
   private runUpdatesCheck = () => {
     cron.schedule(
-      "*/10 * * *  1-5",
+      "*/10 10-18 * * 1-5",
       async () => {
         const ratesToCheck = await getRateUpdates();
         await this.sendRateUpdates(ratesToCheck as RatesNameValue[]);
@@ -43,7 +43,9 @@ class TelegramBotController {
           )
       );
     });
-    LoggerService.saveInfoLog(`Sent update message ${rates.join(", ")}`);
+    if (!!rates.length) {
+      LoggerService.saveInfoLog(`Sent update message ${rates.join(", ")}`);
+    }
   };
 
   public handleUpdates = async (update: Update) => {
