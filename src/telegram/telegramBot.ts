@@ -155,7 +155,7 @@ class TelegramBot extends Telegraf {
   };
 
   static initializeCommands = () => {
-    this.instance.command("start", this.greetCallback);
+    this.instance.start(this.greetCallback);
     this.instance.command("subscribe", (ctx: Context) =>
       this.subscribeCallback(ctx, "subscribe")
     );
