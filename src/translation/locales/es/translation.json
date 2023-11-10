@@ -1,0 +1,36 @@
+{
+  "greet": {
+    "greetUser": "Hola {{userName}}! Los comandos disponibles son los siguientes:\n",
+    "rateCommand": "/{{rateName}} para recibir el valor del $t(rates.{{rateName}})\n",
+    "restCommands": "/subscribe para recibir actualizacion de la moneda que desee\n/unsubscribe para dejar de recibir actualizaciones de la moneda que desee\n/my_subscriptions para ver la lista de suscripciones actuales\n/start para recibir nuevamente este mensaje"
+  },
+  "rates": {
+    "dolar": "Dolar Blue",
+    "dolar_oficial": "Dolar Oficial",
+    "dolar_cripto": "Dolar Cripto",
+    "dolar_turista": "Dolar Turista",
+    "dolar_mep": "Dolar MEP",
+    "euro": "Euro Blue",
+    "euro_oficial": "Euro Oficial",
+    "movement": {
+      "rise": "aumento 📈",
+      "decreased": "bajo 📉",
+      "same": "se mantuvo"
+    },
+    "rateUpdateMessage": "El $t(rates.{{rate}}) $t(rates.movement.{{movimiento}})\nVariacion con ultimo cierre: {{variacion}}\nValor venta cierre anterior: {{valorCierreAnt}}\nCompra: {{compra}}\nVenta: {{venta}}\nPromedio: {{avg}}\nUltima actualizacion: {{- fecha}}"
+  },
+  "user": {
+    "subscribedTo": "Usted esta suscrito a las siguientes actualizaciones:\n",
+    "noSubscriptions": "Usted no cuenta con ninguna suscripcion aun. Ingrese /subscribe para suscribirse",
+    "subscribe": "A cual desea suscribirse?",
+    "unsubscribe": "De cual desea desuscribirse?",
+    "subscribedSuccessful": "Suscripcion a $t(rates.{{rateName}}) exitosa\nRecibira actualizacion si el valor modifica",
+    "unsubscribedSuccessful": "Desuscripcion a $t(rates.{{rateName}}) exitosa",
+    "alreadySubscribed": "Ya se encuentra suscrito a $t(rates.{{rateName}}). $t(user.checkSubs)",
+    "notSubscribed": "No se encuentra suscrito a ${rates.{{rateName}}. $t(user.checkSubs)",
+    "checkSubs": "Puede ver un listado de sus suscripciones usando el comando /my_subscriptions."
+  },
+  "error": {
+    "unrecongnisedCommand": "Ohoh! Comando no reconocido usa /start para ver el listado de comandos."
+  }
+}

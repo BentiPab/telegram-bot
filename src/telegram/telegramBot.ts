@@ -13,12 +13,13 @@ import {
   formatSubsMessage,
   getGreetingMessage,
   getInlineKeyboardOptions,
-  rateNameParser,
+  getUserLanguage,
 } from "../utils/formater";
 import { LoggerService } from "../logger";
 import { RatesNameValue, ratesNames } from "../model";
 import { RateService } from "../services";
 import { callbackQuery, message } from "telegraf/filters";
+import i18next from "i18next";
 
 class TelegramBot extends Telegraf {
   private static instance: TelegramBot;
@@ -43,29 +44,44 @@ class TelegramBot extends Telegraf {
 
   static greetCallback = async (ctx: Context) => {
     const user = (ctx.message as Message.TextMessage).from!;
+    const text = (ctx.message as Message.TextMessage).text;
     await UsersController.createUser(user);
 
     if (user.username === "iWallas") {
       ctx.reply("Waldo come verga");
       return;
     }
-    ctx.reply(getGreetingMessage(user.first_name));
+
+    if (text[0] === "/") {
+      ctx.reply(
+        i18next.t("error.unrecongnisedCommand", {
+          lng: getUserLanguage(user.language_code),
+        })
+      );
+      return;
+    }
+
+    ctx.reply(getGreetingMessage(user));
   };
 
   static subscribeToRate = async (rateName: RatesNameValue, from: User) => {
     await UsersController.handleSubscribeToRate(from, rateName);
-    const rateParsed = rateNameParser[rateName as keyof typeof rateNameParser];
     LoggerService.saveInfoLog(`${from?.first_name} suscribed to ${rateName}`);
-    return `Suscripcion a ${rateParsed} exitosa\nRecibira actualizacion en el horario de mercado, y si el valor modifica`;
+    return i18next.t("user.subscribedSuccessful", {
+      rateName,
+      lng: getUserLanguage(from.language_code),
+    });
   };
 
   static unsuscribeFromRate = async (rateName: RatesNameValue, from: User) => {
     await UsersController.handleUnubscribeToRate(from.id, rateName);
-    const rateParsed = rateNameParser[rateName as keyof typeof rateNameParser];
     LoggerService.saveInfoLog(
       `${from?.first_name} unsuscribed from ${rateName}`
     );
-    return `Desuscripcion a ${rateParsed} exitosa`;
+    return i18next.t("user.unsubscribedSuccessful", {
+      rateName,
+      lng: getUserLanguage(from.language_code),
+    });
   };
 
   static getRateCommand = async (ctx: Context, name: RatesNameValue) => {
@@ -75,7 +91,7 @@ class TelegramBot extends Telegraf {
       ctx.reply("Hubo un problema, intente mas tarde");
       return;
     }
-    const rateFormatted = formatRateToMessage(rate);
+    const rateFormatted = formatRateToMessage(rate, ctx.from?.language_code);
     ctx.reply(rateFormatted);
     LoggerService.saveInfoLog(`${ctx.from?.first_name} requested ${name} rate`);
   };
@@ -83,23 +99,25 @@ class TelegramBot extends Telegraf {
   static getSubscriptions = async (ctx: Context) => {
     const userId = ctx.from?.id;
     const subs = await UsersController.getSubscriptions(userId!);
-    const subsmessage = formatSubsMessage(subs);
+    const subsmessage = formatSubsMessage(subs, ctx.from?.language_code);
 
     ctx.replyWithMarkdownV2(subsmessage, { parse_mode: "HTML" });
   };
 
   static subscribeCallback = async (
     ctx: Context,
-    type: "subscribe" | "desuscribe"
+    type: "subscribe" | "unsubscribe"
   ) => {
-    const message =
-      type === "subscribe"
-        ? "A cual desea suscribirse?"
-        : "De cual desea desuscribirse";
-
-    const markup = Markup.inlineKeyboard(getInlineKeyboardOptions(), {
-      columns: 2,
+    const message = i18next.t(`user.${type}`, {
+      lng: getUserLanguage(ctx.from?.language_code),
     });
+
+    const markup = Markup.inlineKeyboard(
+      getInlineKeyboardOptions(ctx.from?.language_code),
+      {
+        columns: 2,
+      }
+    );
     await ctx.reply(message, {
       parse_mode: "HTML",
       ...markup,
@@ -112,7 +130,9 @@ class TelegramBot extends Telegraf {
     const from = callbackQuery.from;
     const originalMessage = (callbackQuery.message as Message.TextMessage).text;
 
-    const isSubscription = !originalMessage.includes("desuscribirse");
+    const isSubscription =
+      originalMessage ===
+      i18next.t("user.subscribe", { lng: getUserLanguage(from.language_code) });
 
     try {
       let message = "";
@@ -140,7 +160,7 @@ class TelegramBot extends Telegraf {
       this.subscribeCallback(ctx, "subscribe")
     );
     this.instance.command("unsubscribe", (ctx: Context) =>
-      this.subscribeCallback(ctx, "desuscribe")
+      this.subscribeCallback(ctx, "unsubscribe")
     );
 
     ratesNames.forEach((v) =>

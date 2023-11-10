@@ -17,6 +17,7 @@ const userSchema = new Schema<IUser>(
       ref: "Rate",
       default: [],
     },
+    language_code: { type: String, required: false },
   },
   { id: false, versionKey: false, timestamps: true }
 );

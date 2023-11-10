@@ -1,0 +1,36 @@
+{
+  "greet": {
+    "greetUser": "Hello {{userName}}! The following commands are available:\n",
+    "rateCommand": "/{{rateName}} to receive $t(rates.{{rateName}}) value\n",
+    "restCommands": "/subscribe receive update of the desired rate\n/unsubscribe stop receiving updates from desired rate\n/my_subscriptions list all current subscriptions\n/start to receive this message"
+  },
+  "rates": {
+    "dolar": "Blue Dollar",
+    "dolar_oficial": "Official Dollar",
+    "dolar_cripto": "Cripto Dollar",
+    "dolar_turista": "Tourist Dollar",
+    "dolar_mep": "MEP Dollar",
+    "euro": "Blue Euro",
+    "euro_oficial": "Official Euro",
+    "movement": {
+      "rise": "went up 📈",
+      "decreased": "went down 📉",
+      "same": "remained stable"
+    },
+    "rateUpdateMessage": "$t(rates.{{rate}}) $t(rates.movement.{{movimiento}})\nVariation with yesterday's value: {{variacion}}\nYesterdays value: {{valorCierreAnt}}\nBuy: {{compra}}\nSell: {{venta}}\nAverage: {{avg}}\nLast update: {{- fecha}}"
+  },
+  "user": {
+    "subscribedTo": "You are currently suscribed to:\n",
+    "noSubscriptions": "You currently have no subscriptions. You can subscribe using the command /subscribe",
+    "subscribe": "To which one would you like to subscribe?",
+    "unsubscribe": "From which one would you like to unsubscribe?",
+    "subscribedSuccessful": "Subscription to $t(rates.{{rateName}}) successfull\nYou will receive an update if the value changes",
+    "unsubscribedSuccessful": "Unsubscription to $t(rates.{{rateName}}) successfull",
+    "alreadySubscribed": "You are already subscribed to $t(rates.{{rateName}}). $t(user.checkSubs)",
+    "notSubscribed": "You are not subscribed to $t(rates.{{rateName}}). $t(user.checkSubs)",
+    "checkSubs": "You can check your subscriptions using the command /my_subscriptions."
+  },
+  "error": {
+    "unrecongnisedCommand": "Oops! command not found, to get a list of commands you can use /start."
+  }
+}

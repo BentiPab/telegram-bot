@@ -1,73 +1,65 @@
-import {
-  NamesParsedType,
-  RateType,
-  RatesNameValue,
-  RatesNamesParsed,
-  ratesNames,
-} from "../model";
+import i18next from "i18next";
+import { RateType, ratesNames } from "../model";
 import { IRate } from "../mongo/models/rate";
 import { Markup } from "telegraf";
+import { User } from "telegraf/typings/core/types/typegram";
 
 const BULLET_POINT = "\u2022";
+
+export const getUserLanguage = (userLanguage?: string) => {
+  return ["en", "es"].includes(userLanguage || "") ? userLanguage : "en";
+};
 
 export const parseVariationToMovementMessage = (variation: string) => {
   const formatted = variation.replace("%", "").replace(",", ".");
 
   if (formatted.includes("-")) {
-    return "bajo 📉";
+    return "decreased";
   }
 
   if (formatted === "0.00" || formatted === "0") {
-    return "se mantuvo";
+    return "same";
   }
 
-  return "aumento 📈";
+  return "rise";
 };
 
-export const rateNameParser: NamesParsedType = {
-  euro_oficial: "Euro Oficial",
-  dolar_oficial: "Dolar Oficial",
-  dolar: "Dolar Blue",
-  euro: "Euro Blue",
-  dolar_mep: "Dolar Mep",
-  dolar_cripto: "Dolar Cripto",
-  dolar_turista: "Dolar Turista",
-} as const;
+export const getInlineKeyboardOptions = (userLanguage?: string) => {
+  const lng = getUserLanguage(userLanguage);
+  return ratesNames.map((rn) =>
+    Markup.button.callback(i18next.t(`rates.${rn}`, { lng }), rn)
+  );
+};
 
-export const getInlineKeyboardOptions = () =>
-  ratesNames.map((rn) => Markup.button.callback(rateNameParser[rn], rn));
-
-export const getNamesParsedArray = Object.values(rateNameParser).map((v) => v);
-
-export const formatRateToMessage = (data: IRate) => {
+export const formatRateToMessage = (data: IRate, userLanguage?: string) => {
+  const lng = getUserLanguage(userLanguage);
   const { compra, venta, fecha, valorCierreAnt, variacion, name } = data;
-  const movimiento = parseVariationToMovementMessage(variacion);
-  const parsedName = rateNameParser[name as RatesNameValue];
+  const movementKey = parseVariationToMovementMessage(variacion);
   const avg = calculateAvg(compra, venta);
-
-  return `El ${parsedName} ${movimiento}
-Variacion con ultimo cierre: ${variacion}
-${!!valorCierreAnt ? `Valor venta cierre anterior: ${valorCierreAnt}` : ""}
-Compra: ${compra}
-Venta: ${venta}
-Promedio: ${avg}
-Ultima actualizacion: ${fecha}`;
+  const message = i18next.t("rates.rateUpdateMessage", {
+    rate: name,
+    movimiento: movementKey,
+    valorCierreAnt,
+    variacion,
+    compra,
+    venta,
+    avg,
+    fecha,
+    lng,
+  });
+  return message;
 };
 
-export const formatSubsMessage = (data: IRate[]) => {
+export const formatSubsMessage = (data: IRate[], userLanguage?: string) => {
+  const lng = getUserLanguage(userLanguage);
   if (data.length) {
-    const mappedRates = data
-      .map(
-        (r) =>
-          `${BULLET_POINT}${
-            rateNameParser[r.name as keyof typeof rateNameParser]
-          }\n`
-      )
-      .join(" ");
-
-    return `Usted esta suscrito a las siguientes actualizaciones:\n${mappedRates}`;
+    const mappedRates = data.map(
+      (r, index) => `${index + 1}- ${i18next.t(`rates.${r.name}`, { lng })}\n`
+    );
+    const subscriptionMessage = i18next.t("user.subscribedTo", { lng });
+    return subscriptionMessage.concat(...mappedRates);
   } else {
-    return "Usted no cuenta con ninguna suscripcion aun, ingrese /subscribe para comenzar";
+    return i18next.t("user.noSubscriptions", { lng });
   }
 };
 
@@ -78,28 +70,26 @@ export const parseData = (data: RateType, name: string): IRate => {
 export const calculateAvg = (compra: string, venta: string) => {
   const compraParsed = parseFloat(compra);
   const ventaParsed = parseFloat(venta);
-  return ((compraParsed + ventaParsed) / 2).toFixed(2).toString();
+  return ((compraParsed + ventaParsed) / 2)
+    .toFixed(2)
+    .toString()
+    .replace(".", ",");
 };
+export const getGreetingMessage = (user: User) => {
+  const lng = getUserLanguage(user.language_code);
 
-export const GREETING_MESSAGE = `Hola! Los comandos disponibles son los siguientes:
-  /dolar: Para recibir el valor del dolar
-  /subscribe: para recibir una actualizacion cada 10min durante horario de mercado
-  /unsubscribe: para dejar de recibir actualizaciones`;
-
-export const getGreetingMessage = (userName: string) => {
-  const ratesMessage = ratesNames.map(
-    (rn) => `/${rn} para recibir el valor del ${rateNameParser[rn]}`
+  const userGreet = i18next.t("greet.greetUser", {
+    userName: user.first_name,
+    lng,
+  });
+  const rateMessage = ratesNames.map((rn) =>
+    i18next.t("greet.rateCommand", {
+      rateName: rn,
+      val: `$t(${rn})`,
+      lng,
+    })
   );
-  return `Hola ${userName}! Los comandos disponibles son los siguientes:
-/dolar para recibir el valor del Dolar Blue
-/dolar_cripto para recibir el valor del Dolar Cripto
-/dolar_mep para recibir el valor del Dolar MEP
-/dolar_turista para recibir el valor del Dolar Turista
-/dolar_oficial para recibir el valor del Dolar Oficial
-/euro para recibir el valor del Euro Blue
-/euro_oficial para recibir el valor del Euro Oficial
-/subscribe para recibir actualizacion de la moneda que desee
-/unsubscribe para dejar de recibir actualizaciones de la moneda que desee
-/my_subscriptions para ver la lista de suscripciones actuales
-/start para recibir nuevamente este mensaje`;
+  const restCommands = i18next.t("greet.restCommands", { lng });
+
+  return userGreet.concat(...rateMessage).concat(restCommands);
 };

@@ -1,10 +1,10 @@
 import { User } from "telegraf/typings/core/types/typegram";
 import { UserModel } from "../mongo/models/user";
-import { Rate } from "../mongo/models/rate";
 import { RatesNameValue } from "../model";
 import { RateController } from "./rateContoller";
-import { rateNameParser } from "../utils/formater";
+import { getUserLanguage } from "../utils/formater";
 import { RateService } from "../services";
+import i18next from "i18next";
 
 const createUser = async (user: User) => {
   const exists = await UserModel.findOne({ id: user.id });
@@ -45,10 +45,17 @@ const handleSubscribeToRate = async (user: User, rateName: RatesNameValue) => {
   try {
     const userDb = await createUser(user);
 
-    const subscriptions = userDb?.subscriptions;
+    const subscriptions = (await userDb.populate("subscriptions"))
+      ?.subscriptions;
     const alreadySub = subscriptions?.some((s) => s.name === rateName);
+
     if (alreadySub) {
-      throw new Error(`Usuario ya suscrito a ${rateNameParser[rateName]}`);
+      throw new Error(
+        i18next.t("user.alreadySubscribed", {
+          lng: getUserLanguage(user.language_code),
+          rateName,
+        })
+      );
     }
 
     return await userDb?.updateOne({ $push: { subscriptions: rate._id } });
@@ -75,7 +82,12 @@ const handleUnubscribeToRate = async (
   const alreadySub = subscriptions.some((s) => s.name === rateName);
 
   if (!alreadySub) {
-    throw new Error(`Usuario no suscrito a ${rateNameParser[rateName]}`);
+    throw new Error(
+      i18next.t("user.notSubscribed", {
+        lng: getUserLanguage(user.language_code),
+        rateName,
+      })
+    );
   }
 
   const newSubs = subscriptions.filter((s) => s.name !== rateName);

@@ -1,6 +1,5 @@
 import { Schema, model } from "mongoose";
-import { User } from "telegraf/typings/core/types/typegram";
-import { RatesNamesMap } from "../../model";
+import { ratesNames } from "../../model";
 import { getRate } from "../../services/rate";
 
 export interface IRate {
@@ -25,7 +24,7 @@ const rateSchema = new Schema<IRate>(
 );
 
 export const initRateCollection = async () => {
-  const promises = Object.values(RatesNamesMap).map(async (v) => {
+  const promises = ratesNames.map(async (v) => {
     return getRate(v);
   });
 
