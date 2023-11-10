@@ -52,7 +52,7 @@ class TelegramBot extends Telegraf {
       return;
     }
 
-    if (text[0] === "/") {
+    if (text[0] === "/" && text !== "/start") {
       ctx.reply(
         i18next.t("error.unrecongnisedCommand", {
           lng: getUserLanguage(user.language_code),
