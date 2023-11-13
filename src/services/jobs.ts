@@ -32,6 +32,6 @@ export const getRateUpdates = async () => {
     const ratesFiltered = rates.filter((r) => !!r) as RatesNameValue[];
     return ratesFiltered as RatesNameValue[];
   } catch (e) {
-    LoggerService.log("error", (e as Error).message);
+    LoggerService.saveErrorLog((e as Error).message);
   }
 };
