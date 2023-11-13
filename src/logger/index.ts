@@ -16,11 +16,11 @@ const logger = new Logger({
   ],
 });
 const saveInfoLog = (message: string) => {
-  logger.info(message.concat(` at ${getLocalTimeString()}`));
+  logger.log("info", message.concat(` at ${getLocalTimeString()}`));
 };
 
 const saveErrorLog = (message: string) => {
-  logger.error(message.concat(` at ${getLocalTimeString()}`));
+  logger.log("error", message.concat(` at ${getLocalTimeString()}`));
 };
 
 export const LoggerService = { saveInfoLog, saveErrorLog };
