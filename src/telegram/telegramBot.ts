@@ -62,7 +62,10 @@ class TelegramBot extends Telegraf {
       );
       return;
     }
-    ctx.telegram.sendMessage(6677122686, `New user ${getLocalTimeString()}`);
+    await ctx.telegram.sendMessage(
+      6677122686,
+      `New user ${getLocalTimeString()}`
+    );
     ctx.reply(getGreetingMessage(user));
   };
 
