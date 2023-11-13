@@ -33,13 +33,12 @@ class TelegramBotController {
       if (!subs || !rate) {
         return;
       }
-      const subsIds = subs.map((s) => s.id);
-      const messageToSend = formatRateToMessage(rate);
+      const subsIds = subs.map((s) => ({ id: s.id, lng: s.language_code }));
       subsIds.map(
-        async (id) =>
+        async ({ id, lng }) =>
           await TelegramBot.getInstance().telegram.sendMessage(
             id,
-            messageToSend
+            formatRateToMessage(rate, lng)
           )
       );
     });
