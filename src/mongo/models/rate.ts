@@ -1,8 +1,9 @@
-import { Schema, model } from "mongoose";
+import mongoose, { Schema, model } from "mongoose";
 import { ratesNames } from "../../model";
 import { getRate } from "../../services/rate";
 
 export interface IRate {
+  _id: mongoose.Types.ObjectId;
   name: string;
   compra: string;
   venta: string;

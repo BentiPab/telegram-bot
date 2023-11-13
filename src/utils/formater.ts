@@ -1,8 +1,9 @@
 import i18next from "i18next";
-import { RateType, ratesNames } from "../model";
+import { RateType, RatesNameValue, ratesNames } from "../model";
 import { IRate } from "../mongo/models/rate";
 import { Markup } from "telegraf";
 import { User } from "telegraf/typings/core/types/typegram";
+import { IUser } from "../mongo/models/user";
 
 const BULLET_POINT = "\u2022";
 
@@ -24,9 +25,22 @@ export const parseVariationToMovementMessage = (variation: string) => {
   return "rise";
 };
 
-export const getInlineKeyboardOptions = (userLanguage?: string) => {
-  const lng = getUserLanguage(userLanguage);
-  return ratesNames.map((rn) =>
+export const getSubscriptionKeyboardOptions = (
+  user: IUser,
+  type: "subscribe" | "unsubscribe"
+) => {
+  let options = [] as RatesNameValue[];
+  const userSubsNames = user.subscriptions.map((s) => s.name);
+  switch (type) {
+    case "subscribe":
+      options = ratesNames.filter((rn) => !userSubsNames.includes(rn));
+      break;
+    case "unsubscribe":
+      options = ratesNames.filter((rn) => userSubsNames.includes(rn));
+  }
+
+  const lng = getUserLanguage(user.language_code);
+  return options.map((rn) =>
     Markup.button.callback(i18next.t(`rates.${rn}`, { lng }), rn)
   );
 };

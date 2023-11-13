@@ -19,7 +19,7 @@ class MongoConnector {
       });
       LoggerService.saveInfoLog("Connected to mongo");
     } catch (error: any) {
-      LoggerService.log("error", (error as Error).message);
+      LoggerService.saveErrorLog((error as Error).message);
     }
   };
 

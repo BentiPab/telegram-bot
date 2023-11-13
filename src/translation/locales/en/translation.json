@@ -31,6 +31,7 @@
     "checkSubs": "You can check your subscriptions using the command /my_subscriptions."
   },
   "error": {
-    "unrecongnisedCommand": "Oops! command not found, to get a list of commands you can use /start."
+    "unrecongnisedCommand": "Oops! command not found, to get a list of commands you can use /start.",
+    "somethingWentWrong": "Oops! Something went wrong."
   }
 }

@@ -5,7 +5,7 @@ const LOG_LEVELS = ["error", "info"];
 
 const logger = new Logger({
   transports: [
-    new transports.Console({ level: "info" }),
+    ...LOG_LEVELS.map((ll) => new transports.Console({ level: ll })),
     ...LOG_LEVELS.map(
       (ll) =>
         new transports.File({
@@ -16,7 +16,11 @@ const logger = new Logger({
   ],
 });
 const saveInfoLog = (message: string) => {
-  logger.log("info", message.concat(` at ${getLocalTimeString()}`));
+  logger.info(message.concat(` at ${getLocalTimeString()}`));
 };
 
-export const LoggerService = { ...logger, saveInfoLog };
+const saveErrorLog = (message: string) => {
+  logger.error(message.concat(` at ${getLocalTimeString()}`));
+};
+
+export const LoggerService = { saveInfoLog, saveErrorLog };

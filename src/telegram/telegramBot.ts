@@ -12,7 +12,7 @@ import {
   formatRateToMessage,
   formatSubsMessage,
   getGreetingMessage,
-  getInlineKeyboardOptions,
+  getSubscriptionKeyboardOptions,
   getUserLanguage,
 } from "../utils/formater";
 import { LoggerService } from "../logger";
@@ -20,6 +20,7 @@ import { RatesNameValue, ratesNames } from "../model";
 import { RateService } from "../services";
 import { callbackQuery, message } from "telegraf/filters";
 import i18next from "i18next";
+import { IRate } from "../mongo/models/rate";
 
 class TelegramBot extends Telegraf {
   private static instance: TelegramBot;
@@ -37,13 +38,13 @@ class TelegramBot extends Telegraf {
   };
 
   static startBot = () => {
+    this.initializeMiddleware();
     this.initializeCommands();
     this.initializeTexts();
     this.instance.launch();
   };
-
   static greetCallback = async (ctx: Context) => {
-    const user = (ctx.message as Message.TextMessage).from!;
+    const user = ctx.state.user;
     const text = (ctx.message as Message.TextMessage).text;
     await UsersController.createUser(user);
 
@@ -64,13 +65,50 @@ class TelegramBot extends Telegraf {
     ctx.reply(getGreetingMessage(user));
   };
 
-  static subscribeToRate = async (rateName: RatesNameValue, from: User) => {
-    await UsersController.handleSubscribeToRate(from, rateName);
-    LoggerService.saveInfoLog(`${from?.first_name} suscribed to ${rateName}`);
-    return i18next.t("user.subscribedSuccessful", {
-      rateName,
-      lng: getUserLanguage(from.language_code),
-    });
+  static handleRateSubscription = async (
+    ctx: Context,
+    rateName: RatesNameValue
+  ) => {
+    const user = ctx.state.user;
+    const subs = user.subscriptions as IRate[];
+
+    const isSubbed = subs.some((s) => s.name === rateName);
+    try {
+      if (isSubbed) {
+        await UsersController.handleUnubscribeToRate(user.id, rateName);
+        LoggerService.saveInfoLog(
+          `${user.first_name} unsuscribed from ${rateName}`
+        );
+        ctx.reply(
+          i18next.t("user.unsubscribedSuccessful", {
+            rateName,
+            lng: getUserLanguage(user.language_code),
+          })
+        );
+        return;
+      } else {
+        await UsersController.handleSubscribeToRate(user.id, rateName);
+        LoggerService.saveInfoLog(
+          `${user?.first_name} suscribed to ${rateName}`
+        );
+        ctx.reply(
+          i18next.t("user.subscribedSuccessful", {
+            rateName,
+            lng: getUserLanguage(user.language_code),
+          })
+        );
+      }
+    } catch (e) {
+      ctx.reply(
+        i18next.t("error.somethingWentWrong", {
+          rateName,
+          lng: getUserLanguage(user.language_code),
+        })
+      );
+    } finally {
+      ctx.answerCbQuery();
+      ctx.editMessageReplyMarkup(undefined);
+    }
   };
 
   static unsuscribeFromRate = async (rateName: RatesNameValue, from: User) => {
@@ -85,21 +123,24 @@ class TelegramBot extends Telegraf {
   };
 
   static getRateCommand = async (ctx: Context, name: RatesNameValue) => {
+    const user = ctx.state.user;
     const rate = await RateService.getRate(name);
 
     if (!rate) {
       ctx.reply("Hubo un problema, intente mas tarde");
       return;
     }
-    const rateFormatted = formatRateToMessage(rate, ctx.from?.language_code);
+    const rateFormatted = formatRateToMessage(rate, user.language_code);
     ctx.reply(rateFormatted);
     LoggerService.saveInfoLog(`${ctx.from?.first_name} requested ${name} rate`);
   };
 
   static getSubscriptions = async (ctx: Context) => {
-    const userId = ctx.from?.id;
-    const subs = await UsersController.getSubscriptions(userId!);
-    const subsmessage = formatSubsMessage(subs, ctx.from?.language_code);
+    const user = ctx.state.user;
+    const subsmessage = formatSubsMessage(
+      user.subscriptions,
+      user.language_code
+    );
 
     ctx.replyWithMarkdownV2(subsmessage, { parse_mode: "HTML" });
   };
@@ -108,12 +149,12 @@ class TelegramBot extends Telegraf {
     ctx: Context,
     type: "subscribe" | "unsubscribe"
   ) => {
+    const user = ctx.state.user;
     const message = i18next.t(`user.${type}`, {
-      lng: getUserLanguage(ctx.from?.language_code),
+      lng: getUserLanguage(user.language_code),
     });
-
     const markup = Markup.inlineKeyboard(
-      getInlineKeyboardOptions(ctx.from?.language_code),
+      getSubscriptionKeyboardOptions(user, type),
       {
         columns: 2,
       }
@@ -122,36 +163,6 @@ class TelegramBot extends Telegraf {
       parse_mode: "HTML",
       ...markup,
     });
-  };
-
-  static subscriptionCommandHandler = async (ctx: Context) => {
-    const callbackQuery = ctx.callbackQuery as CallbackQuery.DataQuery;
-    const subRate = callbackQuery.data;
-    const from = callbackQuery.from;
-    const originalMessage = (callbackQuery.message as Message.TextMessage).text;
-
-    const isSubscription =
-      originalMessage ===
-      i18next.t("user.subscribe", { lng: getUserLanguage(from.language_code) });
-
-    try {
-      let message = "";
-      if (isSubscription) {
-        message = await this.subscribeToRate(subRate as RatesNameValue, from);
-      } else {
-        message = await this.unsuscribeFromRate(
-          subRate as RatesNameValue,
-          from
-        );
-      }
-
-      ctx.reply(message);
-    } catch (e) {
-      await ctx.reply((e as Error).message);
-    } finally {
-      ctx.answerCbQuery();
-      ctx.editMessageReplyMarkup(undefined);
-    }
   };
 
   static initializeCommands = () => {
@@ -168,11 +179,22 @@ class TelegramBot extends Telegraf {
     );
 
     this.instance.command("my_subscriptions", this.getSubscriptions);
+
+    ratesNames.forEach((rn) => {
+      this.instance.action(rn, (ctx) => this.handleRateSubscription(ctx, rn));
+    });
   };
+
+  static initializeMiddleware() {
+    this.instance.use(async (ctx, next) => {
+      const user = await UsersController.createUser(ctx.from!);
+      ctx.state.user = user;
+      next();
+    });
+  }
 
   static initializeTexts = () => {
     this.instance.on(message("text"), this.greetCallback);
-    this.instance.on(callbackQuery("data"), this.subscriptionCommandHandler);
   };
 
   static initializeWebhook = async () => {

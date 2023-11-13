@@ -5,20 +5,26 @@ import { RateController } from "./rateContoller";
 import { getUserLanguage } from "../utils/formater";
 import { RateService } from "../services";
 import i18next from "i18next";
+import { LoggerService } from "../logger";
+
+const POPULATE_OPTIONS = [{ path: "subscriptions" }];
 
 const createUser = async (user: User) => {
-  const exists = await UserModel.findOne({ id: user.id });
+  const exists = await UserModel.findOne({ id: user.id })
+    .populate(POPULATE_OPTIONS)
+    .lean();
 
   if (exists) {
     return exists;
   }
   const newUser = await UserModel.create(user);
-  return newUser;
+  const populated = await newUser.populate(POPULATE_OPTIONS);
+  return populated;
 };
 
 const findUserById = async (userId: number) => {
   const user = await UserModel.findOne({ id: userId }).populate(
-    "subscriptions"
+    POPULATE_OPTIONS
   );
   if (!user) {
     throw new Error("Usuario no encontrado");
@@ -35,31 +41,25 @@ const findUsersByRate = async (rateName: string) => {
       u.subscriptions.filter((s) => s.name === rateName)
     );
   } catch (e) {
+    LoggerService.saveErrorLog((e as Error).message);
     return;
   }
 };
 
-const handleSubscribeToRate = async (user: User, rateName: RatesNameValue) => {
+const handleSubscribeToRate = async (
+  userId: number,
+  rateName: RatesNameValue
+) => {
   const rate = await RateService.getRate(rateName);
 
   try {
-    const userDb = await createUser(user);
-
-    const subscriptions = (await userDb.populate("subscriptions"))
-      ?.subscriptions;
-    const alreadySub = subscriptions?.some((s) => s.name === rateName);
-
-    if (alreadySub) {
-      throw new Error(
-        i18next.t("user.alreadySubscribed", {
-          lng: getUserLanguage(user.language_code),
-          rateName,
-        })
-      );
-    }
-
-    return await userDb?.updateOne({ $push: { subscriptions: rate._id } });
+    const user = await UserModel.findOneAndUpdate(
+      { id: userId },
+      { $push: { subscriptions: rate._id } }
+    );
+    return user;
   } catch (e) {
+    LoggerService.saveErrorLog((e as Error).message);
     throw e;
   }
 };
@@ -68,31 +68,20 @@ const handleUnubscribeToRate = async (
   userId: number,
   rateName: RatesNameValue
 ) => {
-  const rate = await RateController.getRate(rateName);
-  if (!rate) {
-    throw new Error("Hubo un error interno, pruebe mas tarde");
+  try {
+    const user = await findUserById(userId);
+
+    if (!user) {
+      throw new Error("user not found");
+    }
+
+    const newSubs = user!.subscriptions.filter((s) => s.name !== rateName);
+    await user.updateOne({ $set: { subscriptions: newSubs } });
+    return user;
+  } catch (e) {
+    LoggerService.saveErrorLog((e as Error).message);
+    throw e;
   }
-
-  const user = await findUserById(userId);
-
-  if (!user) {
-    throw new Error("Usuario no encontrado");
-  }
-  const subscriptions = user.subscriptions;
-  const alreadySub = subscriptions.some((s) => s.name === rateName);
-
-  if (!alreadySub) {
-    throw new Error(
-      i18next.t("user.notSubscribed", {
-        lng: getUserLanguage(user.language_code),
-        rateName,
-      })
-    );
-  }
-
-  const newSubs = subscriptions.filter((s) => s.name !== rateName);
-
-  return await user.updateOne({ $set: { subscriptions: newSubs } });
 };
 
 const getSubscriptions = async (userId: number) => {

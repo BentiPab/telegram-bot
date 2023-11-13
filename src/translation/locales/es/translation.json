@@ -31,6 +31,7 @@
     "checkSubs": "Puede ver un listado de sus suscripciones usando el comando /my_subscriptions."
   },
   "error": {
-    "unrecongnisedCommand": "Ohoh! Comando no reconocido usa /start para ver el listado de comandos."
+    "unrecongnisedCommand": "Ohoh! Comando no reconocido usa /start para ver el listado de comandos.",
+    "somethingWentWrong": "Ohoh! Algo salio mal."
   }
 }
