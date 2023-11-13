@@ -21,6 +21,7 @@ import { RateService } from "../services";
 import { callbackQuery, message } from "telegraf/filters";
 import i18next from "i18next";
 import { IRate } from "../mongo/models/rate";
+import { getLocalTimeString } from "../utils/time";
 
 class TelegramBot extends Telegraf {
   private static instance: TelegramBot;
@@ -61,7 +62,7 @@ class TelegramBot extends Telegraf {
       );
       return;
     }
-
+    ctx.telegram.sendMessage(6677122686, `New user ${getLocalTimeString()}`);
     ctx.reply(getGreetingMessage(user));
   };
 
