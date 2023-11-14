@@ -2,10 +2,9 @@ import { User } from "telegraf/typings/core/types/typegram";
 import { UserModel } from "../mongo/models/user";
 import { RatesNameValue } from "../model";
 import { RateController } from "./rateContoller";
-import { getUserLanguage } from "../utils/formater";
 import { RateService } from "../services";
-import i18next from "i18next";
 import { LoggerService } from "../logger";
+import TelegramBot from "../telegram/telegramBot";
 
 const POPULATE_OPTIONS = [{ path: "subscriptions" }];
 
@@ -19,6 +18,7 @@ const createUser = async (user: User) => {
   }
   const newUser = await UserModel.create(user);
   const populated = await newUser.populate(POPULATE_OPTIONS);
+  await TelegramBot.sendUpdateToMaster(`New user ${populated.first_name}`);
   return populated;
 };
 

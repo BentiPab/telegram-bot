@@ -5,8 +5,6 @@ import { Markup } from "telegraf";
 import { User } from "telegraf/typings/core/types/typegram";
 import { IUser } from "../mongo/models/user";
 
-const BULLET_POINT = "\u2022";
-
 export const getUserLanguage = (userLanguage?: string) => {
   return ["en", "es"].includes(userLanguage || "") ? userLanguage : "en";
 };

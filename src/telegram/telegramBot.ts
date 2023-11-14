@@ -1,12 +1,7 @@
 import { Context, Markup, Telegraf } from "telegraf";
 import baseConfig from "../config";
 import App from "../app";
-import {
-  CallbackQuery,
-  Message,
-  Update,
-  User,
-} from "telegraf/typings/core/types/typegram";
+import { Message, User } from "telegraf/typings/core/types/typegram";
 import { UsersController } from "../controller/userController";
 import {
   formatRateToMessage,
@@ -18,13 +13,14 @@ import {
 import { LoggerService } from "../logger";
 import { RatesNameValue, ratesNames } from "../model";
 import { RateService } from "../services";
-import { callbackQuery, message } from "telegraf/filters";
+import { message } from "telegraf/filters";
 import i18next from "i18next";
 import { IRate } from "../mongo/models/rate";
 import { getLocalTimeString } from "../utils/time";
 
 class TelegramBot extends Telegraf {
   private static instance: TelegramBot;
+  master = 6677122686;
 
   constructor(token: string, options?: Partial<Telegraf.Options<Context>>) {
     super(token, options);
@@ -44,17 +40,25 @@ class TelegramBot extends Telegraf {
     this.initializeTexts();
     this.instance.launch();
   };
-  static greetCallback = async (ctx: Context) => {
+
+  static sendUpdateToMaster = async (message: string) => {
+    const formattedMessage = `${message} at ${getLocalTimeString()}`;
+    await this.instance.telegram.sendMessage(
+      this.instance.master,
+      formattedMessage
+    );
+  };
+
+  static handleTexts = async (ctx: Context) => {
     const user = ctx.state.user;
     const text = (ctx.message as Message.TextMessage).text;
-    await UsersController.createUser(user);
 
     if (user.username === "iWallas") {
       ctx.reply("Waldo come verga");
       return;
     }
 
-    if (text[0] === "/" && text !== "/start") {
+    if (text[0] === "/") {
       ctx.reply(
         i18next.t("error.unrecongnisedCommand", {
           lng: getUserLanguage(user.language_code),
@@ -62,10 +66,11 @@ class TelegramBot extends Telegraf {
       );
       return;
     }
-    await ctx.telegram.sendMessage(
-      6677122686,
-      `New user ${getLocalTimeString()}`
-    );
+    ctx.reply(getGreetingMessage(user));
+  };
+
+  static handleStartCommand = async (ctx: Context) => {
+    const user = ctx.state.user;
     ctx.reply(getGreetingMessage(user));
   };
 
@@ -83,6 +88,10 @@ class TelegramBot extends Telegraf {
         LoggerService.saveInfoLog(
           `${user.first_name} unsuscribed from ${rateName}`
         );
+
+        this.sendUpdateToMaster(
+          `New unsub req to ${rateName} from user ${user.first_name}`
+        );
         ctx.reply(
           i18next.t("user.unsubscribedSuccessful", {
             rateName,
@@ -94,6 +103,10 @@ class TelegramBot extends Telegraf {
         await UsersController.handleSubscribeToRate(user.id, rateName);
         LoggerService.saveInfoLog(
           `${user?.first_name} suscribed to ${rateName}`
+        );
+
+        this.sendUpdateToMaster(
+          `New sub req to ${rateName} from user ${user.first_name}`
         );
         ctx.reply(
           i18next.t("user.subscribedSuccessful", {
@@ -115,20 +128,12 @@ class TelegramBot extends Telegraf {
     }
   };
 
-  static unsuscribeFromRate = async (rateName: RatesNameValue, from: User) => {
-    await UsersController.handleUnubscribeToRate(from.id, rateName);
-    LoggerService.saveInfoLog(
-      `${from?.first_name} unsuscribed from ${rateName}`
-    );
-    return i18next.t("user.unsubscribedSuccessful", {
-      rateName,
-      lng: getUserLanguage(from.language_code),
-    });
-  };
-
-  static getRateCommand = async (ctx: Context, name: RatesNameValue) => {
+  static handleGetRateCommand = async (
+    ctx: Context,
+    rateName: RatesNameValue
+  ) => {
     const user = ctx.state.user;
-    const rate = await RateService.getRate(name);
+    const rate = await RateService.getRate(rateName);
 
     if (!rate) {
       ctx.reply("Hubo un problema, intente mas tarde");
@@ -136,10 +141,12 @@ class TelegramBot extends Telegraf {
     }
     const rateFormatted = formatRateToMessage(rate, user.language_code);
     ctx.reply(rateFormatted);
-    LoggerService.saveInfoLog(`${ctx.from?.first_name} requested ${name} rate`);
+
+    this.sendUpdateToMaster(`New ${rateName} from user ${user.first_name}`);
+    LoggerService.saveInfoLog(`${user.first_name} requested ${rateName} rate`);
   };
 
-  static getSubscriptions = async (ctx: Context) => {
+  static handleMySubscriptionsCommand = async (ctx: Context) => {
     const user = ctx.state.user;
     const subsmessage = formatSubsMessage(
       user.subscriptions,
@@ -170,7 +177,7 @@ class TelegramBot extends Telegraf {
   };
 
   static initializeCommands = () => {
-    this.instance.start(this.greetCallback);
+    this.instance.start(this.handleStartCommand);
     this.instance.command("subscribe", (ctx: Context) =>
       this.subscribeCallback(ctx, "subscribe")
     );
@@ -179,10 +186,15 @@ class TelegramBot extends Telegraf {
     );
 
     ratesNames.forEach((v) =>
-      this.instance.command(v, (ctx: Context) => this.getRateCommand(ctx, v))
+      this.instance.command(v, (ctx: Context) =>
+        this.handleGetRateCommand(ctx, v)
+      )
     );
 
-    this.instance.command("my_subscriptions", this.getSubscriptions);
+    this.instance.command(
+      "my_subscriptions",
+      this.handleMySubscriptionsCommand
+    );
 
     ratesNames.forEach((rn) => {
       this.instance.action(rn, (ctx) => this.handleRateSubscription(ctx, rn));
@@ -198,7 +210,7 @@ class TelegramBot extends Telegraf {
   }
 
   static initializeTexts = () => {
-    this.instance.on(message("text"), this.greetCallback);
+    this.instance.on(message("text"), this.handleTexts);
   };
 
   static initializeWebhook = async () => {
