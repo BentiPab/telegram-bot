@@ -4,9 +4,11 @@ import App from "../app";
 import { Message, User } from "telegraf/typings/core/types/typegram";
 import { UsersController } from "../controller/userController";
 import {
+  availableLanguages,
   formatRateToMessage,
   formatSubsMessage,
   getGreetingMessage,
+  getLanguageKeyboardOptions,
   getSubscriptionKeyboardOptions,
   getUserLanguage,
 } from "../utils/formater";
@@ -176,6 +178,32 @@ class TelegramBot extends Telegraf {
     });
   };
 
+  static handleLanguageCommand = async (ctx: Context) => {
+    const user = ctx.state.user;
+    const message = i18next.t(`user.languageChange`, {
+      lng: getUserLanguage(user.language_code),
+      userLang: user.language_code,
+    });
+
+    const markup = Markup.inlineKeyboard(getLanguageKeyboardOptions(user), {
+      columns: 2,
+    });
+    await ctx.reply(message, {
+      parse_mode: "HTML",
+      ...markup,
+    });
+  };
+
+  static handleLanguageChange = async (ctx: Context, newLang: string) => {
+    const user = ctx.state.user;
+    if (newLang !== "cancel") {
+      await UsersController.updateUserLang(user.id, newLang);
+      ctx.reply(i18next.t("user.languageChangeSuccessfull", { lng: newLang }));
+    }
+    ctx.answerCbQuery();
+    ctx.editMessageReplyMarkup(undefined);
+  };
+
   static initializeCommands = () => {
     this.instance.start(this.handleStartCommand);
     this.instance.command("subscribe", (ctx: Context) =>
@@ -195,7 +223,15 @@ class TelegramBot extends Telegraf {
       "my_subscriptions",
       this.handleMySubscriptionsCommand
     );
+    availableLanguages.forEach((l) =>
+      this.instance.action(l, (ctx) => this.handleLanguageChange(ctx, l))
+    );
 
+    this.instance.action("cancel", (ctx) =>
+      this.handleLanguageChange(ctx, "cancel")
+    );
+
+    this.instance.command("language", this.handleLanguageCommand);
     ratesNames.forEach((rn) => {
       this.instance.action(rn, (ctx) => this.handleRateSubscription(ctx, rn));
     });

@@ -2,7 +2,7 @@
   "greet": {
     "greetUser": "Hola {{userName}}! Los comandos disponibles son los siguientes:\n",
     "rateCommand": "/{{rateName}} para recibir el valor del $t(rates.{{rateName}})\n",
-    "restCommands": "/subscribe para recibir actualizacion de la moneda que desee\n/unsubscribe para dejar de recibir actualizaciones de la moneda que desee\n/my_subscriptions para ver la lista de suscripciones actuales\n/start para recibir nuevamente este mensaje"
+    "restCommands": "/language para modificar su idioma\n/subscribe para recibir actualizacion de la moneda que desee\n/unsubscribe para dejar de recibir actualizaciones de la moneda que desee\n/my_subscriptions para ver la lista de suscripciones actuales\n/start para recibir nuevamente este mensaje"
   },
   "rates": {
     "dolar": "Dolar Blue",
@@ -28,10 +28,19 @@
     "unsubscribedSuccessful": "Desuscripcion a $t(rates.{{rateName}}) exitosa",
     "alreadySubscribed": "Ya se encuentra suscrito a $t(rates.{{rateName}}). $t(user.checkSubs)",
     "notSubscribed": "No se encuentra suscrito a ${rates.{{rateName}}. $t(user.checkSubs)",
-    "checkSubs": "Puede ver un listado de sus suscripciones usando el comando /my_subscriptions."
+    "checkSubs": "Puede ver un listado de sus suscripciones usando el comando /my_subscriptions.",
+    "languageChange": "Su idioma actual es $t(app.languages.{{userLang}}). Por favor seleccione otro para cambiarlo, o cancelar.",
+    "languageChangeSuccessfull": "Su idioma ha sido modificado de forma exitosa!!"
   },
   "error": {
     "unrecongnisedCommand": "Ohoh! Comando no reconocido usa /start para ver el listado de comandos.",
     "somethingWentWrong": "Ohoh! Algo salio mal."
+  },
+  "app": {
+    "cancel": "Cancelar",
+    "languages": {
+      "es": "Español",
+      "en": "Ingles"
+    }
   }
 }

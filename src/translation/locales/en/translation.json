@@ -2,7 +2,7 @@
   "greet": {
     "greetUser": "Hello {{userName}}! The following commands are available:\n",
     "rateCommand": "/{{rateName}} to receive $t(rates.{{rateName}}) value\n",
-    "restCommands": "/subscribe receive update of the desired rate\n/unsubscribe stop receiving updates from desired rate\n/my_subscriptions list all current subscriptions\n/start to receive this message"
+    "restCommands": "/language to modify your language\n/subscribe receive update of the desired rate\n/unsubscribe stop receiving updates from desired rate\n/my_subscriptions list all current subscriptions\n/start to receive this message"
   },
   "rates": {
     "dolar": "Blue Dollar",
@@ -28,10 +28,19 @@
     "unsubscribedSuccessful": "Unsubscription to $t(rates.{{rateName}}) successfull",
     "alreadySubscribed": "You are already subscribed to $t(rates.{{rateName}}). $t(user.checkSubs)",
     "notSubscribed": "You are not subscribed to $t(rates.{{rateName}}). $t(user.checkSubs)",
-    "checkSubs": "You can check your subscriptions using the command /my_subscriptions."
+    "checkSubs": "You can check your subscriptions using the command /my_subscriptions.",
+    "languageChange": "Your current language is $t(app.languages.{{userLang}}). Please select another one to change, or cancel.",
+    "languageChangeSuccessfull": "Your language has been successfully modified!!"
   },
   "error": {
     "unrecongnisedCommand": "Oops! command not found, to get a list of commands you can use /start.",
     "somethingWentWrong": "Oops! Something went wrong."
+  },
+  "app": {
+    "cancel": "Cancel",
+    "languages": {
+      "es": "Spanish",
+      "en": "English"
+    }
   }
 }

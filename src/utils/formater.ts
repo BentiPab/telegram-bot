@@ -5,8 +5,10 @@ import { Markup } from "telegraf";
 import { User } from "telegraf/typings/core/types/typegram";
 import { IUser } from "../mongo/models/user";
 
+export const availableLanguages = ["en", "es"];
+
 export const getUserLanguage = (userLanguage?: string) => {
-  return ["en", "es"].includes(userLanguage || "") ? userLanguage : "en";
+  return availableLanguages.includes(userLanguage || "") ? userLanguage : "en";
 };
 
 export const parseVariationToMovementMessage = (variation: string) => {
@@ -21,6 +23,25 @@ export const parseVariationToMovementMessage = (variation: string) => {
   }
 
   return "rise";
+};
+
+export const getLanguageKeyboardOptions = (user: IUser) => {
+  const userLang = getUserLanguage(user.language_code);
+  const availableLanguagesMap = availableLanguages
+    .filter((l) => l !== userLang)
+    .map((lg) => ({
+      value: lg,
+      label: i18next.t(`app.languages.${lg}`, { lng: userLang }),
+    }));
+
+  const availableLanguagesMapWithCancel = availableLanguagesMap.concat({
+    value: "cancel",
+    label: i18next.t("app.cancel", { lng: userLang }),
+  });
+
+  return availableLanguagesMapWithCancel.map((lg) =>
+    Markup.button.callback(lg.label, lg.value)
+  );
 };
 
 export const getSubscriptionKeyboardOptions = (

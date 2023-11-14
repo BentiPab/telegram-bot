@@ -90,6 +90,15 @@ const getSubscriptions = async (userId: number) => {
   return user?.subscriptions;
 };
 
+const updateUserLang = async (userId: number, newLang: string) => {
+  const updated = await UserModel.findOneAndUpdate(
+    { id: userId },
+    { $set: { language_code: newLang } }
+  );
+
+  return updated;
+};
+
 export const UsersController = {
   findUserById,
   findUsersByRate,
@@ -97,4 +106,5 @@ export const UsersController = {
   handleSubscribeToRate,
   handleUnubscribeToRate,
   getSubscriptions,
+  updateUserLang,
 };
